@@ -1,0 +1,375 @@
+include::ROOT:partial$attributes.adoc[]
+[[using-boot-build-systems]]
+== Build systems
+It is strongly recommended that you choose a build system that supports
+<<using-boot-dependency-management,_dependency management_>>, and one
+that can consume artifacts published to the "`Maven Central`" repository. We
+would recommend that you choose Maven or Gradle. It is possible to get Spring Boot to
+work with other build systems (Ant for example), but they will not be particularly well
+supported.
+
+
+
+[[using-boot-dependency-management]]
+=== Dependency management
+Each release of Spring Boot provides a curated list of dependencies it supports. In
+practice, you do not need to provide a version for any of these dependencies in your
+build configuration as Spring Boot is managing that for you. When you upgrade Spring
+Boot itself, these dependencies will be upgraded as well in a consistent way.
+
+NOTE: You can still specify a version and override Spring Boot's recommendations if you
+feel that's necessary.
+
+The curated list contains all the spring modules that you can use with Spring Boot as
+well as a refined list of third party libraries. The list is available as a standard
+<<using-boot-maven-without-a-parent,Bills of Materials (`spring-boot-dependencies`)>>
+and additional dedicated support for <<using-boot-maven-parent-pom,Maven>> and
+<<build-tool-plugins-gradle-dependency-management,Gradle>> are available as well.
+
+WARNING: Each release of Spring Boot is associated with a base version of the Spring
+Framework so we **highly** recommend you to not specify its version on your own.
+
+
+
+[[using-boot-maven]]
+=== Maven
+Maven users can inherit from the `spring-boot-starter-parent` project to obtain sensible
+defaults. The parent project provides the following features:
+
+* Java 1.6 as the default compiler level.
+* UTF-8 source encoding.
+* A <<using-boot-dependency-management,Dependency Management section>>, allowing you to
+  omit `<version>` tags for common dependencies, inherited from the
+  `spring-boot-dependencies` POM.
+* Sensible https://maven.apache.org/plugins/maven-resources-plugin/examples/filter.html[resource filtering].
+* Sensible plugin configuration (http://www.mojohaus.org/exec-maven-plugin/[exec plugin],
+  http://maven.apache.org/surefire/maven-surefire-plugin/[surefire],
+  https://github.com/ktoso/maven-git-commit-id-plugin[Git commit ID],
+  http://maven.apache.org/plugins/maven-shade-plugin/[shade]).
+* Sensible resource filtering for `application.properties` and `application.yml` including
+  profile-specific files (e.g. `application-foo.properties` and `application-foo.yml`)
+
+On the last point: since the default config files accept
+Spring style placeholders (`${...}`) the Maven filtering is changed to
+use `@..@` placeholders (you can override that with a Maven property
+`resource.delimiter`).
+
+
+
+[[using-boot-maven-parent-pom]]
+==== Inheriting the starter parent
+To configure your project to inherit from the `spring-boot-starter-parent` simply set
+the `parent`:
+
+[source,xml,indent=0,subs="verbatim,quotes,attributes"]
+----
+	<!-- Inherit defaults from Spring Boot -->
+	<parent>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>{spring-boot-version}</version>
+	</parent>
+----
+
+NOTE: You should only need to specify the Spring Boot version number on this dependency.
+If you import additional starters, you can safely omit the version number.
+
+With that setup, you can also override individual dependencies by overriding a property
+in your own project. For instance, to upgrade to another Spring Data release train you'd
+add the following to your `pom.xml`.
+
+[source,xml,indent=0,subs="verbatim,quotes,attributes"]
+----
+	<properties>
+		<spring-data-releasetrain.version>Fowler-SR2</spring-data-releasetrain.version>
+	</properties>
+----
+
+TIP: Check the {github-code}/spring-boot-dependencies/pom.xml[`spring-boot-dependencies` pom]
+for a list of supported properties.
+
+
+
+[[using-boot-maven-without-a-parent]]
+==== Using Spring Boot without the parent POM
+Not everyone likes inheriting from the `spring-boot-starter-parent` POM. You may have your
+own corporate standard parent that you need to use, or you may just prefer to explicitly
+declare all your Maven configuration.
+
+If you don't want to use the `spring-boot-starter-parent`, you can still keep the benefit
+of the dependency management (but not the plugin management) by using a `scope=import`
+dependency:
+
+[source,xml,indent=0,subs="verbatim,quotes,attributes"]
+----
+	<dependencyManagement>
+ 		<dependencies>
+			<dependency>
+				<!-- Import dependency management from Spring Boot -->
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-dependencies</artifactId>
+				<version>{spring-boot-version}</version>
+				<type>pom</type>
+		        <scope>import</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+----
+
+That setup does not allow you to override individual dependencies using a property as
+explained above. To achieve the same result, you'd need to add an entry in the
+`dependencyManagement` of your project **before** the `spring-boot-dependencies`
+entry. For instance, to upgrade to another Spring Data release train you'd add the
+following to your `pom.xml`.
+
+[source,xml,indent=0,subs="verbatim,quotes,attributes"]
+----
+	<dependencyManagement>
+		<dependencies>
+			<!-- Override Spring Data release train provided by Spring Boot -->
+			<dependency>
+				<groupId>org.springframework.data</groupId>
+				<artifactId>spring-data-releasetrain</artifactId>
+				<version>Fowler-SR2</version>
+				<scope>import</scope>
+				<type>pom</type>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-dependencies</artifactId>
+				<version>{spring-boot-version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+----
+
+NOTE: In the example above, we specify a _BOM_ but any dependency type can be overridden
+that way.
+
+
+
+[[using-boot-maven-java-version]]
+==== Changing the Java version
+The `spring-boot-starter-parent` chooses fairly conservative Java compatibility. If you
+want to follow our recommendation and use a later Java version you can add a
+`java.version` property:
+
+[source,xml,indent=0,subs="verbatim,quotes,attributes"]
+----
+	<properties>
+		<java.version>1.8</java.version>
+	</properties>
+----
+
+
+
+[[using-boot-maven-plugin]]
+==== Using the Spring Boot Maven plugin
+Spring Boot includes a xref:build-tool-plugins:build-tool-plugins-maven-plugin.adoc#build-tool-plugins-maven-plugin[ Maven plugin]
+that can package the project as an executable jar. Add the plugin to your `<plugins>`
+section if you want to use it:
+
+[source,xml,indent=0,subs="verbatim,quotes,attributes"]
+----
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+			</plugin>
+		</plugins>
+	</build>
+----
+
+NOTE: If you use the Spring Boot starter parent pom, you only need to add the plugin,
+there is no need for to configure it unless you want to change the settings defined in
+the parent.
+
+
+
+[[using-boot-gradle]]
+=== Gradle
+Gradle users can directly import '`starters`' in their `dependencies` section. Unlike
+Maven, there is no "`super parent`" to import to share some configuration.
+
+[source,groovy,indent=0,subs="attributes"]
+----
+	repositories {
+ifeval::["{spring-boot-repo}" != "release"]
+		maven { url "https://repo.spring.io/snapshot" }
+		maven { url "https://repo.spring.io/milestone" }
+endif::[]
+ifeval::["{spring-boot-repo}" == "release"]
+		jcenter()
+endif::[]
+	}
+
+	dependencies {
+		compile("org.springframework.boot:spring-boot-starter-web:{spring-boot-version}")
+	}
+----
+
+The <<build-tool-plugins.adoc#build-tool-plugins-gradle-plugin,
+`spring-boot-gradle-plugin`>> is also available and provides tasks to create executable
+jars and run projects from source. It also provides
+<<build-tool-plugins-gradle-dependency-management, dependency management>> that, among
+other capabilities, allows you to omit the version number for any dependencies that are
+managed by Spring Boot:
+
+[source,groovy,indent=0,subs="attributes"]
+----
+ifeval::["{spring-boot-repo}" == "release"]
+	plugins {
+		id 'org.springframework.boot' version '{spring-boot-version}'
+		id 'java'
+	}
+endif::[]
+ifeval::["{spring-boot-repo}" != "release"]
+	buildscript {
+		repositories {
+			jcenter()
+			maven { url 'https://repo.spring.io/snapshot' }
+			maven { url 'https://repo.spring.io/milestone' }
+		}
+		dependencies {
+			classpath 'org.springframework.boot:spring-boot-gradle-plugin:{spring-boot-version}'
+		}
+	}
+
+	apply plugin: 'java'
+	apply plugin: 'org.springframework.boot'
+endif::[]
+
+	repositories {
+		jcenter()
+ifeval::["{spring-boot-repo}" != "release"]
+		maven { url 'https://repo.spring.io/snapshot' }
+		maven { url 'https://repo.spring.io/milestone' }
+endif::[]
+	}
+
+	dependencies {
+		compile("org.springframework.boot:spring-boot-starter-web")
+		testCompile("org.springframework.boot:spring-boot-starter-test")
+	}
+----
+
+
+
+[[using-boot-ant]]
+===  Ant
+It is possible to build a Spring Boot project using Apache Ant+Ivy. The
+`spring-boot-antlib` "`AntLib`" module is also available to help Ant create executable
+jars.
+
+To declare dependencies a typical `ivy.xml` file will look something like this:
+
+[source,xml,indent=0]
+----
+	<ivy-module version="2.0">
+		<info organisation="org.springframework.boot" module="spring-boot-sample-ant" />
+		<configurations>
+			<conf name="compile" description="everything needed to compile this module" />
+			<conf name="runtime" extends="compile" description="everything needed to run this module" />
+		</configurations>
+		<dependencies>
+			<dependency org="org.springframework.boot" name="spring-boot-starter"
+				rev="${spring-boot.version}" conf="compile" />
+		</dependencies>
+	</ivy-module>
+----
+
+A typical `build.xml` will look like this:
+
+[source,xml,indent=0,subs="verbatim,quotes,attributes"]
+----
+	<project
+		xmlns:ivy="antlib:org.apache.ivy.ant"
+		xmlns:spring-boot="antlib:org.springframework.boot.ant"
+		name="myapp" default="build">
+
+		<property name="spring-boot.version" value="{spring-boot-version}" />
+
+		<target name="resolve" description="--> retrieve dependencies with ivy">
+			<ivy:retrieve pattern="lib/[conf]/[artifact]-[type]-[revision].[ext]" />
+		</target>
+
+		<target name="classpaths" depends="resolve">
+			<path id="compile.classpath">
+				<fileset dir="lib/compile" includes="*.jar" />
+			</path>
+		</target>
+
+		<target name="init" depends="classpaths">
+			<mkdir dir="build/classes" />
+		</target>
+
+		<target name="compile" depends="init" description="compile">
+			<javac srcdir="src/main/java" destdir="build/classes" classpathref="compile.classpath" />
+		</target>
+
+		<target name="build" depends="compile">
+			<spring-boot:exejar destfile="build/myapp.jar" classes="build/classes">
+				<spring-boot:lib>
+					<fileset dir="lib/runtime" />
+				</spring-boot:lib>
+			</spring-boot:exejar>
+		</target>
+	</project>
+----
+
+TIP: See the _xref:howto:howto-build.adoc#howto-build-an-executable-archive-with-ant[howto-build-an-executable-archive-with-ant]_ "`How-to`" if
+you don't want to use the `spring-boot-antlib` module.
+
+
+
+[[using-boot-starter]]
+=== Starters
+Starters are a set of convenient dependency descriptors that you can include in your
+application. You get a one-stop-shop for all the Spring and related technology that you
+need, without having to hunt through sample code and copy paste loads of dependency
+descriptors. For example, if you want to get started using Spring and JPA for database
+access, just include the `spring-boot-starter-data-jpa` dependency in your project, and
+you are good to go.
+
+The starters contain a lot of the dependencies that you need to get a project up and
+running quickly and with a consistent, supported set of managed transitive dependencies.
+
+.What's in a name
+****
+All **official** starters follow a similar naming pattern; `+spring-boot-starter-*+`,
+where `+*+` is a particular type of application. This naming structure is intended to
+help when you need to find a starter. The Maven integration in many IDEs allow you to
+search dependencies by name. For example, with the appropriate Eclipse or STS plugin
+installed, you can simply hit `ctrl-space` in the POM editor and type
+"`spring-boot-starter`" for a complete list.
+
+As explained in the <<spring-boot-features#boot-features-custom-starter,Creating your own starter>>
+section, third party starters should not start with `spring-boot` as it is reserved for
+official Spring Boot artifacts. A third-party starter for `acme` will be typically named
+`acme-spring-boot-starter`.
+****
+
+The following application starters are provided by Spring Boot under the
+`org.springframework.boot` group:
+
+.Spring Boot application starters
+
+In addition to the application starters, the following starters can be used to add
+_xref:production-ready:production-ready.adoc#production-ready[ production ready]_ features:
+
+.Spring Boot production starters
+
+Finally, Spring Boot also includes some starters that can be used if you want to exclude
+or swap specific technical facets:
+
+.Spring Boot technical starters
+
+TIP: For a list of additional community contributed starters, see the
+{github-master-code}/spring-boot-starters/README.adoc[README file] in the
+`spring-boot-starters` module on GitHub.
+
+
+

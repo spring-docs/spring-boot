@@ -1,0 +1,493 @@
+include::ROOT:partial$attributes.adoc[]
+[[howto-build]]
+== Build
+
+
+
+[[howto-build-info]]
+=== Generate build information
+Both the Maven and Gradle plugin allow to generate build information containing
+the coordinates, name and version of the project. The plugin can also be configured
+to add additional properties through configuration. When such file is present,
+Spring Boot auto-configures a `BuildProperties` bean.
+
+To generate build information with Maven, add an execution for the `build-info` goal:
+
+[source,xml,indent=0,subs="verbatim,quotes,attributes"]
+----
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+				<version>{spring-boot-version}</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>build-info</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+----
+
+TIP: Check the {spring-boot-maven-plugin-site}/[Spring Boot Maven Plugin documentation]
+for more details.
+
+And to do the same with Gradle:
+
+[source,groovy,indent=0,subs="verbatim,attributes"]
+----
+	springBoot  {
+		buildInfo()
+	}
+----
+
+Additional properties can be added using the DSL:
+
+[source,groovy,indent=0,subs="verbatim,attributes"]
+----
+	springBoot  {
+		buildInfo {
+			additionalProperties = [
+				'foo': 'bar'
+			]
+		}
+	}
+----
+
+
+
+[[howto-git-info]]
+=== Generate git information
+
+Both Maven and Gradle allow to generate a `git.properties` file containing information
+about the state of your `git` source code repository when the project was built.
+
+For Maven users the `spring-boot-starter-parent` POM includes a pre-configured plugin to
+generate a `git.properties` file. Simply add the following declaration to your POM:
+
+[source,xml,indent=0]
+----
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>pl.project13.maven</groupId>
+				<artifactId>git-commit-id-plugin</artifactId>
+			</plugin>
+		</plugins>
+	</build>
+----
+
+Gradle users can achieve the same result using the
+https://plugins.gradle.org/plugin/com.gorylenko.gradle-git-properties[`gradle-git-properties`] plugin
+
+[source,groovy,indent=0]
+----
+	plugins {
+		id "com.gorylenko.gradle-git-properties" version "1.4.17"
+	}
+----
+
+TIP: The commit time in `git.properties` is expected to match the format
+`yyyy-MM-dd'T'HH:mm:ssZ`. This is the default format for both plugins listed above. Using this format
+allows the time to be parsed into a `Date` and its format when serialized to JSON to be controlled by
+Jackson's date serialization configuration settings.
+
+
+
+[[howto-customize-dependency-versions-with-maven]]
+[[howto-customize-dependency-versions]]
+=== Customize dependency versions
+If you use a Maven build that inherits directly or indirectly from `spring-boot-dependencies`
+(for instance `spring-boot-starter-parent`) but you want to override a specific
+third-party dependency you can add appropriate `<properties>` elements. Browse
+the {github-code}/spring-boot-dependencies/pom.xml[`spring-boot-dependencies`]
+POM for a complete list of properties. For example, to pick a different `slf4j` version
+you would add the following:
+
+[source,xml,indent=0,subs="verbatim,quotes,attributes"]
+----
+	<properties>
+		<slf4j.version>1.7.5<slf4j.version>
+	</properties>
+----
+
+NOTE: This only works if your Maven project inherits (directly or indirectly) from
+`spring-boot-dependencies`. If you have added `spring-boot-dependencies` in your
+own `dependencyManagement` section with `<scope>import</scope>` you have to redefine
+the artifact yourself instead of overriding the property.
+
+WARNING: Each Spring Boot release is designed and tested against a specific set of
+third-party dependencies. Overriding versions may cause compatibility issues.
+
+To override dependency versions in Gradle, you can specify a version as shown below:
+
+[source,groovy,indent=0]
+----
+	ext['slf4j.version'] = '1.7.5'
+----
+
+For additional information, please refer to the
+https://github.com/spring-gradle-plugins/dependency-management-plugin[Gradle Dependency
+Management Plugin documentation].
+
+[[howto-create-an-executable-jar-with-maven]]
+=== Create an executable JAR with Maven
+The `spring-boot-maven-plugin` can be used to create an executable '`fat`' JAR. If you
+are using the `spring-boot-starter-parent` POM you can simply declare the plugin and
+your jars will be repackaged:
+
+[source,xml,indent=0,subs="verbatim,quotes,attributes"]
+----
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+			</plugin>
+		</plugins>
+	</build>
+----
+
+If you are not using the parent POM you can still use the plugin, however, you must
+additionally add an `<executions>` section:
+
+[source,xml,indent=0,subs="verbatim,quotes,attributes"]
+----
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+				<version>{spring-boot-version}</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>repackage</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+----
+
+See the {spring-boot-maven-plugin-site}/usage.html[plugin documentation] for full usage
+details.
+
+
+[[howto-create-an-additional-executable-jar]]
+=== Use a Spring Boot application as a dependency
+Like a war file, a Spring Boot application is not intended to be used as a dependency. If
+your application contains classes that you want to share with other projects, the
+recommended approach is to move that code into a separate module. The separate module can
+then be depended upon by your application and other projects.
+
+If you cannot rearrange your code as recommended above, Spring Boot's Maven and Gradle
+plugins must be configured to produce a separate artifact that is suitable for use as a
+dependency. The executable archive cannot be used as a dependency as the
+<<appendix-executable-jar-format.adoc#executable-jar-jar-file-structure,executable jar
+format>> packages application classes in `BOOT-INF/classes`. This means
+that they cannot be found when the executable jar is used as a dependency.
+
+To produce the two artifacts, one that can be used as a dependency and one that is
+executable, a classifier must be specified. This classifier is applied to the name of the
+executable archive, leaving the default archive for use as dependency.
+
+To configure a classifier of `exec` in Maven, the following configuration can be used:
+
+[source,xml,indent=0,subs="verbatim,quotes,attributes"]
+----
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+				<configuration>
+					<classifier>exec</classifier>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+----
+
+And when using Gradle, the following configuration can be used:
+
+[source,groovy,indent=0,subs="verbatim,attributes"]
+----
+	bootRepackage  {
+		classifier = 'exec'
+	}
+----
+
+
+
+[[howto-extract-specific-libraries-when-an-executable-jar-runs]]
+=== Extract specific libraries when an executable jar runs
+Most nested libraries in an executable jar do not need to be unpacked in order to run,
+however, certain libraries can have problems. For example, JRuby includes its own nested
+jar support which assumes that the `jruby-complete.jar` is always directly available as a
+file in its own right.
+
+To deal with any problematic libraries, you can flag that specific nested jars should be
+automatically unpacked when the executable jar first runs. Such nested jars are written
+beneath the temporary directory identified by the `java.io.tmpdir` system property.
+
+WARNING: Care should be taken to ensure that your operating system is configured so that
+it will not delete the jars that have been unpacked to the temporary directory while the
+application is still running.
+
+For example, to indicate that JRuby should be flagged for unpack using the Maven Plugin
+you would add the following configuration:
+
+[source,xml,indent=0,subs="verbatim,quotes,attributes"]
+----
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+				<configuration>
+					<requiresUnpack>
+						<dependency>
+							<groupId>org.jruby</groupId>
+							<artifactId>jruby-complete</artifactId>
+						</dependency>
+					</requiresUnpack>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+----
+
+And to do that same with Gradle:
+
+[source,groovy,indent=0,subs="verbatim,attributes"]
+----
+	springBoot  {
+		requiresUnpack = ['org.jruby:jruby-complete']
+	}
+----
+
+
+
+[[howto-create-a-nonexecutable-jar]]
+=== Create a non-executable JAR with exclusions
+Often if you have an executable and a non-executable jar as build products, the executable
+version will have additional configuration files that are not needed in a library jar.
+E.g. the `application.yml` configuration file might excluded from the non-executable JAR.
+
+Here's how to do that in Maven:
+
+[source,xml,indent=0,subs="verbatim,quotes,attributes"]
+----
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+				<configuration>
+					<classifier>exec</classifier>
+				</configuration>
+			</plugin>
+			<plugin>
+				<artifactId>maven-jar-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>exec</id>
+						<phase>package</phase>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+						<configuration>
+							<classifier>exec</classifier>
+						</configuration>
+					</execution>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+						<configuration>
+							<!-- Need this to ensure application.yml is excluded -->
+							<forceCreation>true</forceCreation>
+							<excludes>
+								<exclude>application.yml</exclude>
+							</excludes>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+----
+
+In Gradle you can create a new JAR archive with standard task DSL features, and then have
+the `bootRepackage` task depend on that one using its `withJarTask` property:
+
+[source,groovy,indent=0,subs="verbatim,attributes"]
+----
+	jar {
+		baseName = 'spring-boot-sample-profile'
+		version =  '0.0.0'
+		excludes = ['**/application.yml']
+	}
+
+	task('execJar', type:Jar, dependsOn: 'jar') {
+		baseName = 'spring-boot-sample-profile'
+		version =  '0.0.0'
+		classifier = 'exec'
+		from sourceSets.main.output
+	}
+
+	bootRepackage  {
+		withJarTask = tasks['execJar']
+	}
+----
+
+
+
+[[howto-remote-debug-maven-run]]
+=== Remote debug a Spring Boot application started with Maven
+To attach a remote debugger to a Spring Boot application started with Maven you can use
+the `jvmArguments` property of the {spring-boot-maven-plugin-site}/[maven plugin].
+
+Check {spring-boot-maven-plugin-site}/examples/run-debug.html[this example] for more details.
+
+
+
+[[howto-remote-debug-gradle-run]]
+=== Remote debug a Spring Boot application started with Gradle
+To attach a remote debugger to a Spring Boot application started with Gradle you can use
+the `jvmArgs` property of `bootRun` task or `--debug-jvm` command line option.
+
+`build.gradle`:
+
+[source,groovy,indent=0,subs="verbatim,attributes"]
+----
+	bootRun {
+		jvmArgs "-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5005"
+	}
+----
+
+
+Command line:
+
+[indent=0]
+----
+	$ gradle bootRun --debug-jvm
+----
+
+
+Check {gradle-userguide}/application_plugin.html[Gradle Application Plugin] for more
+details.
+
+
+
+[[howto-build-an-executable-archive-with-ant]]
+=== Build an executable archive from Ant without using spring-boot-antlib
+To build with Ant you need to grab dependencies, compile and then create a jar or war
+archive. To make it executable you can either use the `spring-boot-antlib`
+module, or you can follow these instructions:
+
+. If you are building a jar, package the application's classes and resources in a nested
+  `BOOT-INF/classes` directory. If you are building a war, package the application's
+  classes in a nested `WEB-INF/classes` directory as usual.
+. Add the runtime dependencies in a nested `BOOT-INF/lib` directory for a jar or
+  `WEB-INF/lib` for a war. Remember *not* to compress the entries in the archive.
+. Add the `provided` (embedded container) dependencies in a nested `BOOT-INF/lib`
+  directory for jar or `WEB-INF/lib-provided` for a war. Remember *not* to compress the
+  entries in the archive.
+. Add the `spring-boot-loader` classes at the root of the archive (so the `Main-Class`
+  is available).
+. Use the appropriate launcher, e.g. `JarLauncher` for a jar file, as a `Main-Class`
+  attribute in the manifest and specify the other properties it needs as manifest entries,
+  principally a `Start-Class`.
+
+Example:
+
+[source,xml,indent=0]
+----
+	<target name="build" depends="compile">
+		<jar destfile="target/${ant.project.name}-${spring-boot.version}.jar" compress="false">
+			<mappedresources>
+				<fileset dir="target/classes" />
+				<globmapper from="*" to="BOOT-INF/classes/*"/>
+			</mappedresources>
+			<mappedresources>
+				<fileset dir="src/main/resources" erroronmissingdir="false"/>
+				<globmapper from="*" to="BOOT-INF/classes/*"/>
+			</mappedresources>
+			<mappedresources>
+				<fileset dir="${lib.dir}/runtime" />
+				<globmapper from="*" to="BOOT-INF/lib/*"/>
+			</mappedresources>
+			<zipfileset src="${lib.dir}/loader/spring-boot-loader-jar-${spring-boot.version}.jar" />
+			<manifest>
+				<attribute name="Main-Class" value="org.springframework.boot.loader.JarLauncher" />
+				<attribute name="Start-Class" value="${start-class}" />
+			</manifest>
+		</jar>
+	</target>
+----
+
+The {github-code}/spring-boot-samples/spring-boot-sample-ant[Ant Sample] has a
+`build.xml` with a `manual` task that should work if you run it with
+
+[indent=0,subs="verbatim,quotes,attributes"]
+----
+	$ ant -lib <folder containing ivy-2.2.jar> clean manual
+----
+
+after which you can run the application with
+
+[indent=0,subs="verbatim,quotes,attributes"]
+----
+	$ java -jar target/*.jar
+----
+
+
+
+[[howto-use-java-6]]
+=== How to use Java 6
+If you want to use Spring Boot with Java 6 there are a small number of configuration
+changes that you will have to make. The exact changes depend on your application's
+functionality.
+
+
+
+[[howto-use-java-6-embedded-container]]
+==== Embedded servlet container compatibility
+If you are using one of Boot's embedded Servlet containers you will have to use a
+Java 6-compatible container. Both Tomcat 7 and Jetty 8 are Java 6 compatible. See
+<<howto-use-tomcat-7>> and <<howto-use-jetty-8>> for details.
+
+
+
+[[howto-use-java-6-jackson]]
+==== Jackson
+Jackson 2.7 and later requires Java 7. If you want to use Jackson with Java 6 you
+will have to downgrade to Jackson 2.6.
+
+Spring Boot uses the Jackson BOM that was introduced as of Jackson 2.7 so you can't just
+override the `jackson.version` property. In order to use Jackson 2.6, you will have to
+define the individual modules in the `dependencyManagement` section of your build, check
+https://github.com/{github-repo}/blob/0ffc7dc13f6de82c199a6d503354a88c7aaec2d9/spring-boot-dependencies/pom.xml#L523-L597[this
+example] for more details.
+
+
+
+[[how-to-use-java-6-jta-api]]
+==== JTA API compatibility
+While the Java Transaction API itself doesn't require Java 7 the official API jar
+contains classes that have been built to require Java 7. If you are using JTA then
+you will need to replace the official JTA 1.2 API jar with one that has been built
+to work on Java 6. To do so, exclude any transitive dependencies on
+`javax.transaction:javax.transaction-api` and replace them with a dependency on
+`org.jboss.spec.javax.transaction:jboss-transaction-api_1.2_spec:1.0.0.Final`
+
+
+

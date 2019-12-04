@@ -1,0 +1,6 @@
+** xref:build-tool-plugins.adoc[Build Tool Plugins]
+*** xref:build-tool-plugins-maven-plugin.adoc[Spring Boot Maven Plugin]
+*** xref:build-tool-plugins-gradle-plugin.adoc[Spring Boot Gradle Plugin]
+*** xref:build-tool-plugins-antlib.adoc[Spring Boot Antlib Module]
+*** xref:build-tool-plugins-other-build-systems.adoc[Supporting Other Build Systems]
+*** xref:build-tool-plugins-whats-next.adoc[What To Read Next]

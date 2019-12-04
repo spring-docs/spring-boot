@@ -1,0 +1,6 @@
+** xref:cli.adoc[Spring Boot Cli]
+*** xref:cli-installation.adoc[Installing The Cli]
+*** xref:cli-using-the-cli.adoc[Using The Cli]
+*** xref:cli-groovy-beans-dsl.adoc[Developing Application With The Groovy Beans Dsl]
+*** xref:cli-maven-settings.adoc[Configuring The Cli With Settings.Xml]
+*** xref:cli-whats-next.adoc[What To Read Next]

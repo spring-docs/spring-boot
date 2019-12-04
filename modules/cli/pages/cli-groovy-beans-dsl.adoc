@@ -1,0 +1,37 @@
+include::ROOT:partial$attributes.adoc[]
+[[cli-groovy-beans-dsl]]
+== Developing application with the Groovy beans DSL
+Spring Framework 4.0 has native support for a `beans{}` "`DSL`" (borrowed from
+http://grails.org/[Grails]),  and you can embed bean definitions in your Groovy
+application scripts using the same format. This is sometimes a good way to include
+external features like middleware declarations. For example:
+
+[source,groovy,indent=0]
+----
+	@Configuration
+	class Application implements CommandLineRunner {
+
+		@Autowired
+		SharedService service
+
+		@Override
+		void run(String... args) {
+			println service.message
+		}
+
+	}
+
+	import my.company.SharedService
+
+	beans {
+		service(SharedService) {
+			message = "Hello World"
+		}
+	}
+----
+
+You can mix class declarations with `beans{}` in the same file as long as they stay at
+the top level, or you can put the beans DSL in a separate file if you prefer.
+
+
+

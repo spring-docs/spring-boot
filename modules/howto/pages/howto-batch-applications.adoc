@@ -1,0 +1,34 @@
+include::ROOT:partial$attributes.adoc[]
+[[howto-batch-applications]]
+== Batch applications
+
+NOTE: By default, batch applications require a `DataSource` to store job details. If you
+want to deviate from that, you'll need to implement `BatchConfigurer`, see
+{spring-batch-javadoc}/core/configuration/annotation/EnableBatchProcessing.html[The
+Javadoc of `@EnableBatchProcessing`] for more details.
+
+
+
+[[howto-execute-spring-batch-jobs-on-startup]]
+=== Execute Spring Batch jobs on startup
+Spring Batch auto-configuration is enabled by adding `@EnableBatchProcessing`
+(from Spring Batch) somewhere in your context.
+
+By default it executes *all* `Jobs` in the application context on startup (see
+{sc-spring-boot-autoconfigure}/batch/JobLauncherCommandLineRunner.{sc-ext}[JobLauncherCommandLineRunner]
+for details). You can narrow down to a specific job or jobs by specifying
+`spring.batch.job.names` (comma-separated job name patterns).
+
+If the application context includes a `JobRegistry` then the jobs in
+`spring.batch.job.names` are looked up in the registry instead of being autowired from the
+context. This is a common pattern with more complex systems where multiple jobs are
+defined in child contexts and registered centrally.
+
+See
+{sc-spring-boot-autoconfigure}/batch/BatchAutoConfiguration.{sc-ext}[BatchAutoConfiguration]
+and
+https://github.com/spring-projects/spring-batch/blob/master/spring-batch-core/src/main/java/org/springframework/batch/core/configuration/annotation/EnableBatchProcessing.java[@EnableBatchProcessing]
+for more details.
+
+
+

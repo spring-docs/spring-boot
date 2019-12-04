@@ -1,0 +1,77 @@
+include::ROOT:partial$attributes.adoc[]
+[[using-boot-structuring-your-code]]
+== Structuring your code
+Spring Boot does not require any specific code layout to work, however, there are some
+best practices that help.
+
+
+
+[[using-boot-using-the-default-package]]
+=== Using the "`default`" package
+When a class doesn't include a `package` declaration it is considered to be in the
+"`default package`". The use of the "`default package`" is generally discouraged, and
+should be avoided. It can cause particular problems for Spring Boot applications that
+use `@ComponentScan`, `@EntityScan` or `@SpringBootApplication` annotations, since every
+class from every jar, will be read.
+
+TIP: We recommend that you follow Java's recommended package naming conventions
+and use a reversed domain name (for example, `com.example.project`).
+
+
+
+[[using-boot-locating-the-main-class]]
+=== Locating the main application class
+We generally recommend that you locate your main application class in a root package
+above other classes. The <<using-boot-using-springbootapplication-annotation,
+`@SpringBootApplication` annotation>> is often placed on your main class, and it
+implicitly defines a base "`search package`" for certain items. For example, if you are
+writing a JPA application, the package of the `@SpringBootApplication` annotated class
+will be used to search for `@Entity` items. Using a root package also allows component
+scan to apply only on your project.
+
+TIP: If you don't want to use `@SpringBootApplication`, the `@EnableAutoConfiguration`
+and `@ComponentScan` annotations that it imports defines that behaviour so you can also
+use that instead.
+
+Here is a typical layout:
+
+[indent=0]
+----
+	com
+	 +- example
+	     +- myproject
+	         +- Application.java
+	         |
+	         +- domain
+	         |   +- Customer.java
+	         |   +- CustomerRepository.java
+	         |
+	         +- service
+	         |   +- CustomerService.java
+	         |
+	         +- web
+	             +- CustomerController.java
+----
+
+The `Application.java` file would declare the `main` method, along with the basic
+`@SpringBootApplication`.
+
+[source,java,indent=0]
+----
+	package com.example.myproject;
+
+	import org.springframework.boot.SpringApplication;
+	import org.springframework.boot.autoconfigure.SpringBootApplication
+
+	@SpringBootApplication
+	public class Application {
+
+		public static void main(String[] args) {
+			SpringApplication.run(Application.class, args);
+		}
+
+	}
+----
+
+
+

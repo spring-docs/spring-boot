@@ -1,0 +1,10 @@
+include::ROOT:partial$attributes.adoc[]
+[[cli-installation]]
+== Installing the CLI
+The Spring Boot CLI can be installed manually; using SDKMAN! (the SDK Manager)
+or using Homebrew or MacPorts if you are an OSX user. See
+_xref:getting-started:getting-started-installing-spring-boot.adoc#getting-started-installing-the-cli[getting-started-installing-the-cli]_
+in the "`Getting started`" section for comprehensive installation instructions.
+
+
+

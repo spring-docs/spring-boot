@@ -1,0 +1,1 @@
+include::boot-documentation:page$boot-documentation.adoc[]

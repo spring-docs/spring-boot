@@ -1,0 +1,97 @@
+include::ROOT:partial$attributes.adoc[]
+[[howto-security]]
+== Security
+
+
+[[howto-switch-off-spring-boot-security-configuration]]
+=== Switch off the Spring Boot security configuration
+If you define a `@Configuration` with `@EnableWebSecurity` anywhere in your application
+it will switch off the default webapp security settings in Spring Boot (but leave the
+Actuator's security enabled). To tweak the defaults try setting properties in
+`+security.*+` (see
+{sc-spring-boot-autoconfigure}/security/SecurityProperties.{sc-ext}[`SecurityProperties`]
+for details of available settings) and `SECURITY` section of
+<<common-application-properties-security,Common application properties>>.
+
+
+
+[[howto-change-the-authenticationmanager-and-add-user-accounts]]
+=== Change the AuthenticationManager and add user accounts
+If you provide a `@Bean` of type `AuthenticationManager` the default one will not be
+created, so you have the full feature set of Spring Security available (e.g.
+http://docs.spring.io/spring-security/site/docs/current/reference/htmlsingle/#jc-authentication[various authentication options]).
+
+Spring Security also provides a convenient `AuthenticationManagerBuilder` which can be
+used to build an `AuthenticationManager` with common options. The recommended way to
+use this in a webapp is to inject it into a void method in a
+`WebSecurityConfigurerAdapter`, e.g.
+
+[source,java,indent=0,subs="verbatim,quotes,attributes"]
+----
+	@Configuration
+	public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
+
+		@Autowired
+		public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
+				auth.inMemoryAuthentication()
+					.withUser("barry").password("password").roles("USER"); // ... etc.
+		}
+
+		// ... other stuff for application security
+
+	}
+----
+
+You will get the best results if you put this in a nested class, or a standalone class
+(i.e. not mixed in with a lot of other `@Beans` that might be allowed to influence the
+order of instantiation). The {github-code}/spring-boot-samples/spring-boot-sample-web-secure[secure web sample]
+is a useful template to follow.
+
+If you experience instantiation issues (e.g. using JDBC or JPA for the user detail store)
+it might be worth extracting the `AuthenticationManagerBuilder` callback into a
+`GlobalAuthenticationConfigurerAdapter` (in the `init()` method so it happens before the
+authentication manager is needed elsewhere), e.g.
+
+[source,java,indent=0,subs="verbatim,quotes,attributes"]
+----
+	@Configuration
+	public class AuthenticationManagerConfiguration extends
+			GlobalAuthenticationConfigurerAdapter {
+
+		@Override
+		public void init(AuthenticationManagerBuilder auth) {
+			auth.inMemoryAuthentication() // ... etc.
+		}
+
+	}
+----
+
+
+
+[[howto-enable-https]]
+=== Enable HTTPS when running behind a proxy server
+Ensuring that all your main endpoints are only available over HTTPS is an important
+chore for any application. If you are using Tomcat as a servlet container, then
+Spring Boot will add Tomcat's own `RemoteIpValve` automatically if it detects some
+environment settings, and you should be able to rely on the `HttpServletRequest` to
+report whether it is secure or not (even downstream of a proxy server that handles the
+real SSL termination). The standard behavior is determined by the presence or absence of
+certain request headers (`x-forwarded-for` and `x-forwarded-proto`), whose names are
+conventional, so it should work with most front end proxies. You can switch on the valve
+by adding some entries to `application.properties`, e.g.
+
+[source,properties,indent=0]
+----
+	server.tomcat.remote-ip-header=x-forwarded-for
+	server.tomcat.protocol-header=x-forwarded-proto
+----
+
+(The presence of either of those properties will switch on the valve. Or you can add the
+`RemoteIpValve` yourself by adding a `TomcatEmbeddedServletContainerFactory` bean.)
+
+Spring Security can also be configured to require a secure channel for all (or some
+requests). To switch that on in a Spring Boot application you just need to set
+`security.require_ssl` to `true` in `application.properties`.
+
+
+

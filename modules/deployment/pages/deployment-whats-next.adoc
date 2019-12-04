@@ -1,0 +1,13 @@
+include::ROOT:partial$attributes.adoc[]
+[[deployment-whats-next]]
+== What to read next
+Check out the http://www.cloudfoundry.com/[Cloud Foundry],
+https://www.heroku.com/[Heroku], https://www.openshift.com[OpenShift] and
+https://boxfuse.com[Boxfuse] web sites for more information about the kinds of features
+that a PaaS can offer. These are just four of the most popular Java PaaS providers, since
+Spring Boot is so amenable to cloud-based deployment you're free to consider other
+providers as well.
+
+The next section goes on to cover the _xref:cli:cli.adoc#cli[ Spring Boot CLI]_;
+or you can jump ahead to read about
+_xref:build-tool-plugins:build-tool-plugins.adoc#build-tool-plugins[ build tool plugins]_.

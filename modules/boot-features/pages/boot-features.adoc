@@ -1,0 +1,15 @@
+include::ROOT:partial$attributes.adoc[]
+[[boot-features]]
+= Spring Boot features
+
+
+--
+This section dives into the details of Spring Boot. Here you can learn about the key
+features that you will want to use and customize. If you haven't already, you might want
+to read the _xref:getting-started:getting-started.adoc#getting-started[getting-started]_ and
+_xref:using-boot:using-boot.adoc#using-boot[using-boot]_ sections so that you have a good grounding
+of the basics.
+--
+
+
+

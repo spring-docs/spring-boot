@@ -1,0 +1,6 @@
+** xref:getting-started.adoc[Getting Started]
+*** xref:getting-started-introducing-spring-boot.adoc[Introducing Spring Boot]
+*** xref:getting-started-system-requirements.adoc[System Requirements]
+*** xref:getting-started-installing-spring-boot.adoc[Installing Spring Boot]
+*** xref:getting-started-first-application.adoc[Developing Your First Spring Boot Application]
+*** xref:getting-started-whats-next.adoc[What To Read Next]

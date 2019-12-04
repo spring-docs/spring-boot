@@ -1,0 +1,18 @@
+include::ROOT:partial$attributes.adoc[]
+[[boot-documentation-first-steps]]
+== First steps
+If you're just getting started with Spring Boot, or 'Spring' in general,
+xref:getting-started:getting-started.adoc#getting-started[ this is the place to start!]
+
+* *From scratch:*
+  xref:getting-started:getting-started-introducing-spring-boot.adoc#getting-started-introducing-spring-boot[ Overview] |
+  xref:getting-started:getting-started-system-requirements.adoc#getting-started-system-requirements[ Requirements] |
+  xref:getting-started:getting-started-installing-spring-boot.adoc#getting-started-installing-spring-boot[ Installation]
+* *Tutorial:*
+  xref:getting-started:getting-started-first-application.adoc#getting-started-first-application[ Part 1] |
+  xref:getting-started:getting-started-first-application.adoc#getting-started-first-application-code[ Part 2]
+* *Running your example:*
+  xref:getting-started:getting-started-first-application.adoc#getting-started-first-application-run[ Part 1] |
+  xref:getting-started:getting-started-first-application.adoc#getting-started-first-application-executable-jar[ Part 2]
+
+

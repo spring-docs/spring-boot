@@ -1,0 +1,154 @@
+include::ROOT:partial$attributes.adoc[]
+[[howto-hotswapping]]
+== Hot swapping
+
+
+
+[[howto-reload-static-content]]
+=== Reload static content
+There are several options for hot reloading. The recommended approach is to use
+xref:using-boot:using-boot-devtools.adoc#using-boot-devtools[`spring-boot-devtools`] as it provides
+additional development-time features such as support for fast application restarts
+and LiveReload as well as sensible development-time configuration (e.g. template caching).
+Devtools works by monitoring the classpath for changes. This means that static resource
+changes must be "built" for the change to take affect. By default, this happens
+automatically in Eclipse when you save your changes. In IntelliJ IDEA, Make Project will
+trigger the necessary build. Due to the
+<<using-spring-boot.adoc#using-boot-devtools-restart-exclude, default restart
+exclusions>>, changes to static resources will not trigger a restart of your application.
+They will, however, trigger a live reload.
+
+Alternatively, running in an IDE (especially with debugging on) is a good way to do
+development (all modern IDEs allow reloading of static resources and usually also
+hot-swapping of Java class changes).
+
+Finally, the xref:build-tool-plugins:build-tool-plugins.adoc#build-tool-plugins[ Maven and Gradle plugins] can
+be configured (see the `addResources` property) to support running from the command line
+with reloading of static files directly from source. You can use that with an external
+css/js compiler process if you are writing that code with higher level tools.
+
+
+
+[[howto-reload-thymeleaf-template-content]]
+=== Reload templates without restarting the container
+Most of the templating technologies supported by Spring Boot include a configuration
+option to disable caching (see below for details). If you're using the
+`spring-boot-devtools` module these properties will be
+xref:using-boot:using-boot-devtools.adoc#using-boot-devtools-property-defaults[automatically configured]
+for you at development time.
+
+
+
+[[howto-reload-thymeleaf-content]]
+==== Thymeleaf templates
+If you are using Thymeleaf, then set `spring.thymeleaf.cache` to `false`. See
+{sc-spring-boot-autoconfigure}/thymeleaf/ThymeleafAutoConfiguration.{sc-ext}[`ThymeleafAutoConfiguration`]
+for other Thymeleaf customization options.
+
+
+
+[[howto-reload-freemarker-content]]
+==== FreeMarker templates
+If you are using FreeMarker, then set `spring.freemarker.cache` to `false`. See
+{sc-spring-boot-autoconfigure}/freemarker/FreeMarkerAutoConfiguration.{sc-ext}[`FreeMarkerAutoConfiguration`]
+for other FreeMarker customization options.
+
+
+
+[[howto-reload-groovy-template-content]]
+==== Groovy templates
+If you are using Groovy templates, then set `spring.groovy.template.cache` to `false`. See
+{sc-spring-boot-autoconfigure}/groovy/template/GroovyTemplateAutoConfiguration.{sc-ext}[`GroovyTemplateAutoConfiguration`]
+for other Groovy customization options.
+
+
+
+[[howto-reload-fast-restart]]
+=== Fast application restarts
+The `spring-boot-devtools` module includes support for automatic application restarts.
+Whilst not as fast as technologies such as http://zeroturnaround.com/software/jrebel/[JRebel]
+or https://github.com/spring-projects/spring-loaded[Spring Loaded] it's usually
+significantly faster than a "`cold start`". You should probably give it a try before
+investigating some of the more complex reload options discussed below.
+
+For more details see the xref:using-boot:using-boot-devtools.adoc#using-boot-devtools[using-boot-devtools] section.
+
+
+[[howto-reload-java-classes-without-restarting]]
+=== Reload Java classes without restarting the container
+Modern IDEs (Eclipse, IDEA, etc.) all support hot swapping of bytecode, so if you make a
+change that doesn't affect class or method signatures it should reload cleanly with no
+side effects.
+
+https://github.com/spring-projects/spring-loaded[Spring Loaded] goes a little further in
+that it can reload class definitions with changes in the method signatures. With some
+customization it can force an `ApplicationContext` to refresh itself (but there is no
+general mechanism to ensure that would be safe for a running application anyway, so it
+would only ever be a development time trick probably).
+
+
+[[howto-reload-springloaded-maven]]
+==== Configuring Spring Loaded for use with Maven
+To use Spring Loaded with the Maven command line, just add it as a dependency in the
+Spring Boot plugin declaration, e.g.
+
+[source,xml,indent=0]
+----
+	<plugin>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-maven-plugin</artifactId>
+		<dependencies>
+			<dependency>
+				<groupId>org.springframework</groupId>
+				<artifactId>springloaded</artifactId>
+				<version>1.2.6.RELEASE</version>
+			</dependency>
+		</dependencies>
+	</plugin>
+----
+
+This normally works pretty well with Eclipse and IntelliJ IDEA as long as they have their
+build configuration aligned with the Maven defaults (Eclipse m2e does this out of the
+box).
+
+
+
+[[howto-reload-springloaded-gradle-and-intellij-idea]]
+==== Configuring Spring Loaded for use with Gradle and IntelliJ IDEA
+You need to jump through a few hoops if you want to use Spring Loaded in combination with
+Gradle and IntelliJ IDEA. By default, IntelliJ IDEA will compile classes into a different
+location than Gradle, causing Spring Loaded monitoring to fail.
+
+To configure IntelliJ IDEA correctly you can use the `idea` Gradle plugin:
+
+[source,groovy,indent=0,subs="verbatim,attributes"]
+----
+	buildscript {
+		repositories { jcenter() }
+		dependencies {
+			classpath "org.springframework.boot:spring-boot-gradle-plugin:{spring-boot-version}"
+			classpath 'org.springframework:springloaded:1.2.6.RELEASE'
+		}
+	}
+
+	apply plugin: 'idea'
+
+	idea {
+		module {
+			inheritOutputDirs = false
+			outputDir = file("$buildDir/classes/main/")
+		}
+	}
+
+	// ...
+
+----
+
+NOTE: IntelliJ IDEA must be configured to use the same Java version as the command line
+Gradle task and `springloaded` *must* be included as a `buildscript` dependency.
+
+You can also additionally enable '`Make Project Automatically`' inside  IntelliJ IDEA to
+automatically compile your code whenever a file is saved.
+
+
+

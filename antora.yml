@@ -1,0 +1,27 @@
+name: spring-boot-docs
+version: 1.5.19.RELEASE
+title: Spring Boot Docs
+nav:
+  - modules/boot-documentation/nav.adoc
+  - modules/getting-started/nav.adoc
+  - modules/using-boot/nav.adoc
+  - modules/boot-features/nav.adoc
+  - modules/production-ready/nav.adoc
+  - modules/deployment/nav.adoc
+  - modules/cli/nav.adoc
+  - modules/build-tool-plugins/nav.adoc
+  - modules/howto/nav.adoc
+  - modules/appendix/nav.adoc
+asciidoc:
+  attributes:
+    docinfo: true
+    jooq-version: 3.9.6
+    spring-version: 4.3.22.RELEASE
+    spring-boot-version: 1.5.19.RELEASE
+    spring-boot-docs-version: 1.5.19.RELEASE
+    spring-boot-repo: https://github.com/spring-projects/spring-boot
+    spring-docs-version: 4.3.22.RELEASE
+    spring-security-docs-version: 4.2.11.RELEASE
+    spring-webservices-docs-version: 2.4.4.RELEASE
+    github-tag: v1.5.19.RELEASE
+

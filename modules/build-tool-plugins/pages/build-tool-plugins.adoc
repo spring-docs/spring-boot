@@ -1,0 +1,16 @@
+include::ROOT:partial$attributes.adoc[]
+[[build-tool-plugins]]
+= Build tool plugins
+
+
+--
+Spring Boot provides build tool plugins for Maven and Gradle. The plugins offer a
+variety of features, including the packaging of executable jars. This section provides
+more details on both plugins, as well as some help should you need to extend an
+unsupported build system. If you are just getting started, you might want to read
+"`xref:using-boot:using-boot-build-systems.adoc#using-boot-build-systems[using-boot-build-systems]`" from the
+xref:using-boot:using-boot.adoc#using-boot[using-boot] section first.
+--
+
+
+

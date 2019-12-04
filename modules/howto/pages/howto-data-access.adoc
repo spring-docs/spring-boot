@@ -1,0 +1,431 @@
+include::ROOT:partial$attributes.adoc[]
+[[howto-data-access]]
+== Data Access
+
+
+
+[[howto-configure-a-datasource]]
+=== Configure a custom DataSource
+To configure your own `DataSource` define a `@Bean` of that type in your configuration.
+Spring Boot will reuse your `DataSource` anywhere one is required, including database
+initialization. If you need to externalize some settings, you can easily bind your
+`DataSource` to the environment (see
+xref:boot-features:boot-features-external-config.adoc#boot-features-external-config-3rd-party-configuration[boot-features-external-config-3rd-party-configuration]).
+
+[source,java,indent=0,subs="verbatim,quotes,attributes"]
+----
+	@Bean
+	@ConfigurationProperties(prefix="app.datasource")
+	public DataSource dataSource() {
+		return new FancyDataSource();
+	}
+----
+
+[source,properties,indent=0]
+----
+	app.datasource.url=jdbc:h2:mem:mydb
+	app.datasource.username=sa
+	app.datasource.pool-size=30
+----
+
+Assuming that your `FancyDataSource` has regular JavaBean properties for the url, the
+username and the pool size, these settings will be bound automatically before the
+`DataSource` is made available to other components. The regular
+<<howto-initialize-a-database-using-spring-jdbc,database initialization>> will also happen
+(so the relevant sub-set of `spring.datasource.*` can still be used with your custom
+configuration).
+
+You can apply the same principle if you are configuring a custom JNDI `DataSource`:
+
+[source,java,indent=0,subs="verbatim,quotes,attributes"]
+----
+	@Bean(destroyMethod="")
+	@ConfigurationProperties(prefix="app.datasource")
+	public DataSource dataSource() throws Exception {
+		JndiDataSourceLookup dataSourceLookup = new JndiDataSourceLookup();
+		return dataSourceLookup.getDataSource("java:comp/env/jdbc/YourDS");
+	}
+----
+
+Spring Boot also provides a utility builder class `DataSourceBuilder` that can be used to
+create one of the standard data sources (if it is on the classpath). The builder can
+detect the one to use based on what's available on the classpath. It also auto detects the
+driver based on the JDBC url.
+
+[source,java,indent=0,subs="verbatim,quotes,attributes"]
+----
+include::{code-examples}/jdbc/BasicDataSourceExample.java[tag=configuration]
+----
+
+To run an app with that `DataSource`, all that is needed really is the connection
+information; pool-specific settings can also be provided, check the implementation that
+is going to be used at runtime for more details.
+
+[source,properties,indent=0]
+----
+	app.datasource.url=jdbc:mysql://localhost/test
+	app.datasource.username=dbuser
+	app.datasource.password=dbpass
+	app.datasource.pool-size=30
+----
+
+There is a catch however. Because the actual type of the connection pool is not exposed,
+no keys are generated in the metadata for your custom `DataSource` and no completion is
+available in your IDE (The `DataSource` interface doesn't expose any property). Also, if
+you happen to _only_ have Hikari on the classpath, this basic setup will not work because
+Hikari has no `url` parameter (but a `jdbcUrl` parameter). You will have to rewrite
+your configuration as follows:
+
+[source,properties,indent=0]
+----
+	app.datasource.jdbc-url=jdbc:mysql://localhost/test
+	app.datasource.username=dbuser
+	app.datasource.password=dbpass
+	app.datasource.maximum-pool-size=30
+----
+
+You can fix that by forcing the connection pool to use and return a dedicated
+implementation rather than `DataSource`. You won't be able to change the implementation
+at runtime but the list of options will be explicit.
+
+[source,java,indent=0,subs="verbatim,quotes,attributes"]
+----
+include::{code-examples}/jdbc/SimpleDataSourceExample.java[tag=configuration]
+----
+
+You can even go further by leveraging what `DataSourceProperties` does for you, that is
+providing a default embedded database if no url is provided with a sensible username and
+password for it. You can easily initialize a `DataSourceBuilder` from the state of any
+`DataSourceProperties` so you could just as well inject the one Spring Boot creates
+automatically. However, that would split your configuration in two namespaces: url,
+username, password, type and driver on `spring.datasource` and the rest on your custom
+namespace (`app.datasource`). To avoid that, you can redefine a custom
+`DataSourceProperties` on your custom namespace:
+
+[source,java,indent=0,subs="verbatim,quotes,attributes"]
+----
+include::{code-examples}/jdbc/ConfigurableDataSourceExample.java[tag=configuration]
+----
+
+This setup puts you _in pair_ with what Spring Boot does for you by default, except that
+a dedicated connection pool is chosen (in code) and its settings are exposed in the same
+namespace. Because `DataSourceProperties` is taking care of the `url`/`jdbcUrl`
+translation for you, you can configure it like this:
+
+[source,properties,indent=0]
+----
+	app.datasource.url=jdbc:mysql://localhost/test
+	app.datasource.username=dbuser
+	app.datasource.password=dbpass
+	app.datasource.maximum-pool-size=30
+----
+
+NOTE: Because your custom configuration chooses to go with Hikari, `app.datasource.type`
+will have no effect. In practice the builder will be initialized with whatever value you
+might set there and then overridden by the call to `.type()`.
+
+See _xref:boot-features:boot-features-sql.adoc#boot-features-configure-datasource[boot-features-configure-datasource]_ in the
+'`Spring Boot features`' section and the
+{sc-spring-boot-autoconfigure}/jdbc/DataSourceAutoConfiguration.{sc-ext}[`DataSourceAutoConfiguration`]
+class for more details.
+
+
+
+[[howto-two-datasources]]
+=== Configure Two DataSources
+If you need to configure multiple data sources, you can apply the same tricks that are
+described in the previous section. You must, however, mark one of the `DataSource`
+`@Primary` as various auto-configurations down the road expect to be able to get one by
+type.
+
+If you create your own `DataSource`, the auto-configuration will back off. In the example
+below, we provide the _exact_ same features set than what the auto-configuration provides
+on the primary data source:
+
+[source,java,indent=0,subs="verbatim,quotes,attributes"]
+----
+include::{code-examples}/jdbc/SimpleTwoDataSourcesExample.java[tag=configuration]
+----
+
+TIP: `fooDataSourceProperties` has to be flagged `@Primary` so that the database
+initializer feature uses your copy (should you use that).
+
+Both data sources are also bound for advanced customizations. For instance you could
+configure them as follows:
+
+[source,properties,indent=0]
+----
+	app.datasource.foo.type=com.zaxxer.hikari.HikariDataSource
+	app.datasource.foo.maximum-pool-size=30
+
+	app.datasource.bar.url=jdbc:mysql://localhost/test
+	app.datasource.bar.username=dbuser
+	app.datasource.bar.password=dbpass
+	app.datasource.bar.max-total=30
+----
+
+Of course, you can apply the same concept to the secondary `DataSource` as well:
+
+[source,java,indent=0,subs="verbatim,quotes,attributes"]
+----
+include::{code-examples}/jdbc/CompleteTwoDataSourcesExample.java[tag=configuration]
+----
+
+This final example configures two data sources on custom namespaces with the same logic
+than what Spring Boot would do in auto-configuration.
+
+
+
+[[howto-use-spring-data-repositories]]
+=== Use Spring Data repositories
+Spring Data can create implementations for you of `@Repository` interfaces of various
+flavors. Spring Boot will handle all of that for you as long as those `@Repositories`
+are included in the same package (or a sub-package) of your `@EnableAutoConfiguration`
+class.
+
+For many applications all you will need is to put the right Spring Data dependencies on
+your classpath (there is a `spring-boot-starter-data-jpa` for JPA and a
+`spring-boot-starter-data-mongodb` for Mongodb), create some repository interfaces to handle your
+`@Entity` objects. Examples are in the {github-code}/spring-boot-samples/spring-boot-sample-data-jpa[JPA sample]
+or the {github-code}/spring-boot-samples/spring-boot-sample-data-mongodb[Mongodb sample].
+
+Spring Boot tries to guess the location of your `@Repository` definitions, based on the
+`@EnableAutoConfiguration` it finds. To get more control, use the `@EnableJpaRepositories`
+annotation (from Spring Data JPA).
+
+
+[[howto-separate-entity-definitions-from-spring-configuration]]
+=== Separate @Entity definitions from Spring configuration
+Spring Boot tries to guess the location of your `@Entity` definitions, based on the
+`@EnableAutoConfiguration` it finds. To get more control, you can use the `@EntityScan`
+annotation, e.g.
+
+[source,java,indent=0,subs="verbatim,quotes,attributes"]
+----
+	@Configuration
+	@EnableAutoConfiguration
+	@EntityScan(basePackageClasses=City.class)
+	public class Application {
+
+		//...
+
+	}
+----
+
+
+
+[[howto-configure-jpa-properties]]
+=== Configure JPA properties
+Spring Data JPA already provides some vendor-independent configuration options (e.g.
+for SQL logging) and Spring Boot exposes those, and a few more for hibernate as external
+configuration properties. Some of them are automatically detected according to the context
+so you shouldn't have to set them.
+
+The `spring.jpa.hibernate.ddl-auto` is a special case in that it has different defaults
+depending on whether you are using an embedded database (`create-drop`) or not (`none`).
+The dialect to use is also automatically detected based on the current `DataSource` but
+you can set `spring.jpa.database` yourself if you want to be explicit and bypass that
+check on startup.
+
+NOTE: Specifying a `database` leads to the configuration of a well-defined Hibernate
+dialect. Several databases have more than one `Dialect` and this may not suit your need.
+In that case, you can either set `spring.jpa.database` to `default` to let Hibernate figure
+things out or set the dialect using the `spring.jpa.database-platform` property.
+
+The most common options to set are:
+
+[indent=0,subs="verbatim,quotes,attributes"]
+----
+	spring.jpa.hibernate.naming.physical-strategy=com.example.MyPhysicalNamingStrategy
+	spring.jpa.show-sql=true
+----
+
+In addition all properties in `+spring.jpa.properties.*+` are passed through as normal JPA
+properties (with the prefix stripped) when the local `EntityManagerFactory` is created.
+
+
+
+[[howto-configure-hibernate-naming-strategy]]
+=== Configure Hibernate Naming Strategy
+Spring Boot provides a consistent naming strategy regardless of the Hibernate generation
+that you are using. If you are using Hibernate 4, you can customize it using
+`spring.jpa.hibernate.naming.strategy`; Hibernate 5 defines a `Physical` and `Implicit`
+naming strategies.
+
+Spring Boot configures `SpringPhysicalNamingStrategy` by default. This implementation
+provides the same table structure as Hibernate 4: all dots are replaced by underscores and
+camel cases are replaced by underscores as well. By default, all table names are generated
+in lower case but it is possible to override that flag if your schema requires it.
+
+Concretely, a `TelephoneNumber` entity will be mapped to the `telephone_number` table.
+
+If you'd rather use Hibernate 5's default instead, set the following property:
+
+[indent=0,subs="verbatim,quotes,attributes"]
+----
+	spring.jpa.hibernate.naming.physical-strategy=org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+----
+
+
+See {sc-spring-boot-autoconfigure}/orm/jpa/HibernateJpaAutoConfiguration.{sc-ext}[`HibernateJpaAutoConfiguration`]
+and {sc-spring-boot-autoconfigure}/orm/jpa/JpaBaseConfiguration.{sc-ext}[`JpaBaseConfiguration`]
+for more details.
+
+
+
+[[howto-use-custom-entity-manager]]
+=== Use a custom EntityManagerFactory
+To take full control of the configuration of the `EntityManagerFactory`, you need to add
+a `@Bean` named '`entityManagerFactory`'. Spring Boot auto-configuration switches off its
+entity manager based on the presence of a bean of that type.
+
+
+
+[[howto-use-two-entity-managers]]
+=== Use Two EntityManagers
+Even if the default `EntityManagerFactory` works fine, you will need to define a new one
+because otherwise the presence of the second bean of that type will switch off the
+default. To make it easy to do that you can use the convenient `EntityManagerBuilder`
+provided by Spring Boot, or if you prefer you can just use the
+`LocalContainerEntityManagerFactoryBean` directly from Spring ORM.
+
+Example:
+
+[source,java,indent=0,subs="verbatim,quotes,attributes"]
+----
+	// add two data sources configured as above
+
+	@Bean
+	public LocalContainerEntityManagerFactoryBean customerEntityManagerFactory(
+			EntityManagerFactoryBuilder builder) {
+		return builder
+				.dataSource(customerDataSource())
+				.packages(Customer.class)
+				.persistenceUnit("customers")
+				.build();
+	}
+
+	@Bean
+	public LocalContainerEntityManagerFactoryBean orderEntityManagerFactory(
+			EntityManagerFactoryBuilder builder) {
+		return builder
+				.dataSource(orderDataSource())
+				.packages(Order.class)
+				.persistenceUnit("orders")
+				.build();
+	}
+----
+
+The configuration above almost works on its own. To complete the picture you need to
+configure `TransactionManagers` for the two `EntityManagers` as well. One of them could
+be picked up by the default `JpaTransactionManager` in Spring Boot if you mark it as
+`@Primary`. The other would have to be explicitly injected into a new instance. Or you
+might be able to use a JTA transaction manager spanning both.
+
+If you are using Spring Data, you need to configure `@EnableJpaRepositories` accordingly:
+
+[source,java,indent=0,subs="verbatim,quotes,attributes"]
+----
+	@Configuration
+	@EnableJpaRepositories(basePackageClasses = Customer.class,
+			entityManagerFactoryRef = "customerEntityManagerFactory")
+	public class CustomerConfiguration {
+		...
+	}
+
+	@Configuration
+	@EnableJpaRepositories(basePackageClasses = Order.class,
+			entityManagerFactoryRef = "orderEntityManagerFactory")
+	public class OrderConfiguration {
+		...
+	}
+----
+
+
+
+[[howto-use-traditional-persistence-xml]]
+=== Use a traditional persistence.xml
+Spring Boot will not search for or use a `META-INF/persistence.xml` by default. If you
+prefer to use a traditional `persistence.xml`, you need to define your own `@Bean` of type
+`LocalEntityManagerFactoryBean` (with id '`entityManagerFactory`', and set the persistence
+unit name there.
+
+See
+{sc-spring-boot-autoconfigure}/orm/jpa/JpaBaseConfiguration.{sc-ext}[`JpaBaseConfiguration`]
+for the default settings.
+
+
+
+[[howto-use-spring-data-jpa--and-mongo-repositories]]
+=== Use Spring Data JPA and Mongo repositories
+
+Spring Data JPA and Spring Data Mongo can both create `Repository` implementations for you
+automatically. If they are both present on the classpath, you might have to do some extra
+configuration to tell Spring Boot which one (or both) you want to create repositories for
+you. The most explicit way to do that is to use the standard Spring Data
+`+@Enable*Repositories+` and tell it the location of your `Repository` interfaces
+(where '`*`' is '`Jpa`' or '`Mongo`' or both).
+
+There are also flags `+spring.data.*.repositories.enabled+` that you can use to switch the
+auto-configured repositories on and off in external configuration.  This is useful for
+instance in case you want to switch off the Mongo repositories and still use the
+auto-configured `MongoTemplate`.
+
+The same obstacle and the same features exist for other auto-configured Spring Data
+repository types (Elasticsearch, Solr). Just change the names of the annotations and flags
+respectively.
+
+
+
+[[howto-use-exposing-spring-data-repositories-rest-endpoint]]
+=== Expose Spring Data repositories as REST endpoint
+Spring Data REST can expose the `Repository` implementations as REST endpoints for you as
+long as Spring MVC has been enabled for the application.
+
+Spring Boot exposes a set of useful properties from the `spring.data.rest` namespace that
+customize the
+{spring-data-rest-javadoc}/core/config/RepositoryRestConfiguration.{dc-ext}[`RepositoryRestConfiguration`].
+If you need to provide additional customization, you should use a
+{spring-data-rest-javadoc}/webmvc/config/RepositoryRestConfigurer.{dc-ext}[`RepositoryRestConfigurer`]
+bean.
+
+NOTE: If you don't specify any order on your custom `RepositoryRestConfigurer` it will run
+after the one Spring Boot uses internally. If you need to specify an order, make sure it
+is higher than 0.
+
+
+
+[[howto-configure-a-component-that-is-used-by-JPA]]
+=== Configure a component that is used by JPA
+If you want to configure a component that will be used by JPA then you need to ensure
+that the component is initialized before JPA. Where the component is auto-configured
+Spring Boot will take care of this for you. For example, when Flyway is auto-configured,
+Hibernate is configured to depend upon Flyway so that the latter has a chance to
+initialize the database before Hibernate tries to use it.
+
+If you are configuring a component yourself, you can use an
+`EntityManagerFactoryDependsOnPostProcessor` subclass as a convenient way of setting up
+the necessary dependencies. For example, if you are using Hibernate Search with
+Elasticsearch as its index manager then any `EntityManagerFactory` beans must be
+configured to depend on the `elasticsearchClient` bean:
+
+[source,java,indent=0]
+----
+include::{code-examples}/elasticsearch/HibernateSearchElasticsearchExample.java[tag=configuration]
+----
+
+
+
+[[howto-configure-jOOQ-with-multiple-datasources]]
+=== Configure jOOQ with Two DataSources
+If you need to use jOOQ with multiple data sources, you should create your own
+`DSLContext` for each, refer to
+{sc-spring-boot-autoconfigure}/jooq/JooqAutoConfiguration.{sc-ext}[JooqAutoConfiguration]
+for more details.
+
+TIP: In particular, `JooqExceptionTranslator` and `SpringTransactionProvider` can be
+reused to provide similar features to what the auto-configuration does with a single
+`DataSource`.
+
+
+

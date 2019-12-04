@@ -1,0 +1,18 @@
+include::ROOT:partial$attributes.adoc[]
+
+== Advanced topics
+Lastly, we have a few topics for the more advanced user.
+
+* *Deploy Spring Boot Applications:*
+xref:deployment:cloud-deployment.adoc#cloud-deployment[ Cloud Deployment] |
+xref:deployment:deployment-install.adoc#deployment-service[ OS Service]
+* *Build tool plugins:*
+xref:build-tool-plugins:build-tool-plugins-maven-plugin.adoc#build-tool-plugins-maven-plugin[ Maven] |
+xref:build-tool-plugins:build-tool-plugins-gradle-plugin.adoc#build-tool-plugins-gradle-plugin[ Gradle]
+* *Appendix:*
+xref:appendix:common-application-properties.adoc#common-application-properties[ Application Properties] |
+xref:appendix:auto-configuration-classes.adoc#auto-configuration-classes[ Auto-configuration classes] |
+xref:appendix:executable-jar.adoc#executable-jar[ Executable Jars]
+
+
+

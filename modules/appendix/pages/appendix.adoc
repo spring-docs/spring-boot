@@ -1,0 +1,7 @@
+include::ROOT:partial$attributes.adoc[]
+[[appendix]]
+= Appendices
+:numbered!:
+[appendix]
+
+

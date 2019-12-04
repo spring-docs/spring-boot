@@ -1,0 +1,18 @@
+include::ROOT:partial$attributes.adoc[]
+[[production-ready]]
+= Spring Boot Actuator: Production-ready features
+
+
+--
+Spring Boot includes a number of additional features to help you monitor and manage your
+application when it's pushed to production. You can choose to manage and monitor your
+application using HTTP endpoints, with JMX or even by remote shell (SSH or Telnet).
+Auditing, health and metrics gathering can be automatically applied to your application.
+
+Actuator HTTP endpoints are only available with a Spring MVC-based application. In
+particular, it will not work with Jersey <<howto.adoc#howto-use-actuator-with-jersey,
+unless you enable Spring MVC as well.>>
+--
+
+
+

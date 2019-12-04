@@ -1,0 +1,762 @@
+include::ROOT:partial$attributes.adoc[]
+[[boot-features-nosql]]
+== Working with NoSQL technologies
+Spring Data provides additional projects that help you access a variety of NoSQL
+technologies including
+http://projects.spring.io/spring-data-mongodb/[MongoDB],
+http://projects.spring.io/spring-data-neo4j/[Neo4J],
+https://github.com/spring-projects/spring-data-elasticsearch/[Elasticsearch],
+http://projects.spring.io/spring-data-solr/[Solr],
+http://projects.spring.io/spring-data-redis/[Redis],
+http://projects.spring.io/spring-data-gemfire/[Gemfire],
+http://projects.spring.io/spring-data-cassandra/[Cassandra],
+http://projects.spring.io/spring-data-couchbase/[Couchbase] and
+http://projects.spring.io/spring-data-ldap/[LDAP].
+Spring Boot provides auto-configuration for Redis, MongoDB, Neo4j, Elasticsearch, Solr
+Cassandra, Couchbase and LDAP; you can make use of the other projects, but you will need
+to configure them yourself. Refer to the appropriate reference documentation at
+http://projects.spring.io/spring-data[projects.spring.io/spring-data].
+
+
+
+[[boot-features-redis]]
+=== Redis
+http://redis.io/[Redis] is a cache, message broker and richly-featured key-value store.
+Spring Boot offers basic auto-configuration for the
+https://github.com/xetorthio/jedis/[Jedis] client library and abstractions on top of it
+provided by https://github.com/spring-projects/spring-data-redis[Spring Data Redis]. There
+is a `spring-boot-starter-data-redis` '`Starter`' for collecting the dependencies in a
+convenient way.
+
+
+
+[[boot-features-connecting-to-redis]]
+==== Connecting to Redis
+You can inject an auto-configured `RedisConnectionFactory`, `StringRedisTemplate` or
+vanilla `RedisTemplate` instance as you would any other Spring Bean. By default the
+instance will attempt to connect to a Redis server using `localhost:6379`:
+
+[source,java,indent=0]
+----
+	@Component
+	public class MyBean {
+
+		private StringRedisTemplate template;
+
+		@Autowired
+		public MyBean(StringRedisTemplate template) {
+			this.template = template;
+		}
+
+		// ...
+
+	}
+----
+
+If you add a `@Bean` of your own of any of the auto-configured types it will replace the
+default (except in the case of `RedisTemplate` the exclusion is based on the bean name
+'`redisTemplate`' not its type). If `commons-pool2` is on the classpath you will get a
+pooled connection factory by default.
+
+
+
+[[boot-features-mongodb]]
+=== MongoDB
+http://www.mongodb.com/[MongoDB] is an open-source NoSQL document database that uses a
+JSON-like schema instead of traditional table-based relational data. Spring Boot offers
+several conveniences for working with MongoDB, including the
+`spring-boot-starter-data-mongodb` '`Starter`'.
+
+
+
+[[boot-features-connecting-to-mongodb]]
+==== Connecting to a MongoDB database
+You can inject an auto-configured `org.springframework.data.mongodb.MongoDbFactory` to
+access Mongo databases. By default the instance will attempt to connect to a MongoDB
+server using the URL `mongodb://localhost/test`:
+
+[source,java,indent=0]
+----
+	import org.springframework.data.mongodb.MongoDbFactory;
+	import com.mongodb.DB;
+
+	@Component
+	public class MyBean {
+
+		private final MongoDbFactory mongo;
+
+		@Autowired
+		public MyBean(MongoDbFactory mongo) {
+			this.mongo = mongo;
+		}
+
+		// ...
+
+		public void example() {
+			DB db = mongo.getDb();
+			// ...
+		}
+
+	}
+----
+
+You can set `spring.data.mongodb.uri` property to change the URL and configure
+additional settings such as the _replica set_:
+
+[source,properties,indent=0]
+----
+	spring.data.mongodb.uri=mongodb://user:secret@mongo1.example.com:12345,mongo2.example.com:23456/test
+----
+
+Alternatively, as long as you're using Mongo 2.x, specify a `host`/`port`. For example,
+you might declare the following in your `application.properties`:
+
+[source,properties,indent=0]
+----
+	spring.data.mongodb.host=mongoserver
+	spring.data.mongodb.port=27017
+----
+
+NOTE: `spring.data.mongodb.host` and `spring.data.mongodb.port` are not supported if
+you're using the Mongo 3.0 Java driver. In such cases, `spring.data.mongodb.uri` should be
+used to provide all of the configuration.
+
+TIP: If `spring.data.mongodb.port` is not specified the default of `27017` is used. You
+could simply delete this line from the sample above.
+
+TIP: If you aren't using Spring Data Mongo you can inject `com.mongodb.Mongo` beans
+instead of using `MongoDbFactory`.
+
+You can also declare your own `MongoDbFactory` or `Mongo` bean if you want to take
+complete control of establishing the MongoDB connection.
+
+
+
+[[boot-features-mongo-template]]
+==== MongoTemplate
+Spring Data Mongo provides a
+{spring-data-mongo-javadoc}/core/MongoTemplate.html[`MongoTemplate`] class that is very
+similar in its design to Spring's `JdbcTemplate`. As with `JdbcTemplate` Spring Boot
+auto-configures a bean for you to simply inject:
+
+[source,java,indent=0]
+----
+	import org.springframework.beans.factory.annotation.Autowired;
+	import org.springframework.data.mongodb.core.MongoTemplate;
+	import org.springframework.stereotype.Component;
+
+	@Component
+	public class MyBean {
+
+		private final MongoTemplate mongoTemplate;
+
+		@Autowired
+		public MyBean(MongoTemplate mongoTemplate) {
+			this.mongoTemplate = mongoTemplate;
+		}
+
+		// ...
+
+	}
+----
+
+See the `MongoOperations` Javadoc for complete details.
+
+
+
+[[boot-features-spring-data-mongo-repositories]]
+==== Spring Data MongoDB repositories
+Spring Data includes repository support for MongoDB. As with the JPA repositories
+discussed earlier, the basic principle is that queries are constructed for you
+automatically based on method names.
+
+In fact, both Spring Data JPA and Spring Data MongoDB share the same common
+infrastructure; so you could take the JPA example from earlier and, assuming that `City`
+is now a Mongo data class rather than a JPA `@Entity`, it will work in the same way.
+
+[source,java,indent=0]
+----
+	package com.example.myapp.domain;
+
+	import org.springframework.data.domain.*;
+	import org.springframework.data.repository.*;
+
+	public interface CityRepository extends Repository<City, Long> {
+
+		Page<City> findAll(Pageable pageable);
+
+		City findByNameAndCountryAllIgnoringCase(String name, String country);
+
+	}
+----
+
+TIP: You can customize document scanning locations using the `@EntityScan` annotation.
+
+TIP: For complete details of Spring Data MongoDB, including its rich object mapping
+technologies, refer to their http://projects.spring.io/spring-data-mongodb/[reference
+documentation].
+
+
+
+[[boot-features-mongo-embedded]]
+==== Embedded Mongo
+Spring Boot offers auto-configuration for
+https://github.com/flapdoodle-oss/de.flapdoodle.embed.mongo[Embedded Mongo]. To use
+it in your Spring Boot application add a dependency on
+`de.flapdoodle.embed:de.flapdoodle.embed.mongo`.
+
+The port that Mongo will listen on can be configured using the `spring.data.mongodb.port`
+property. To use a randomly allocated free port use a value of zero. The `MongoClient`
+created by `MongoAutoConfiguration` will be automatically configured to use the randomly
+allocated port.
+
+NOTE: If you do not configure a custom port, the embedded support will use a random port
+by default (rather than 27017).
+
+If you have SLF4J on the classpath, output produced by Mongo will be automatically routed
+to a logger named `org.springframework.boot.autoconfigure.mongo.embedded.EmbeddedMongo`.
+
+You can declare your own `IMongodConfig` and `IRuntimeConfig` beans to take control of the
+Mongo instance's configuration and logging routing.
+
+
+
+[[boot-features-neo4j]]
+=== Neo4j
+http://neo4j.com/[Neo4j] is an open-source NoSQL graph database that uses a rich data
+model of nodes related by first class relationships which is better suited for connected
+big data than traditional rdbms approaches. Spring Boot offers several conveniences for
+working with Neo4j, including the `spring-boot-starter-data-neo4j` '`Starter`'.
+
+
+
+[[boot-features-connecting-to-neo4j]]
+==== Connecting to a Neo4j database
+You can inject an auto-configured `Neo4jSession`, `Session` or `Neo4jOperations` instance
+as you would any other Spring Bean. By default the instance will attempt to connect to a
+Neo4j server using `localhost:7474`:
+
+[source,java,indent=0]
+----
+	@Component
+	public class MyBean {
+
+		private final Neo4jTemplate neo4jTemplate;
+
+		@Autowired
+		public MyBean(Neo4jTemplate neo4jTemplate) {
+			this.neo4jTemplate = neo4jTemplate;
+		}
+
+		// ...
+
+	}
+----
+
+You can take full control of the configuration by adding a
+`org.neo4j.ogm.config.Configuration` `@Bean` of your own. Also, adding a `@Bean` of type
+`Neo4jOperations` disables the auto-configuration.
+
+You can configure the user and credentials to use via the `spring.data.neo4j.*`
+properties:
+
+[source,properties,indent=0]
+----
+	spring.data.neo4j.uri=http://my-server:7474
+	spring.data.neo4j.username=neo4j
+	spring.data.neo4j.password=secret
+----
+
+
+
+[[boot-features-connecting-to-neo4j-embedded]]
+==== Using the embedded mode
+
+If you add `org.neo4j:neo4j-ogm-embedded-driver` to the dependencies of your application,
+Spring Boot will automatically configure an in-process embedded instance of Neo4j that
+will not persist any data when your application shuts down. You can explicitly disable
+that mode using `spring.data.neo4j.embedded.enabled=false`. You can also enable
+persistence for the embedded mode:
+
+----
+	spring.data.neo4j.uri=file://var/tmp/graph.db
+----
+
+[NOTE]
+====
+The Neo4j OGM embedded driver does not provide the Neo4j kernel. Users are expected to
+provide this dependency manually, see
+http://neo4j.com/docs/ogm-manual/current/reference/#reference:getting-started[the documentation]
+for more details.
+====
+
+
+[[boot-features-neo4j-ogm-session]]
+==== Neo4jSession
+
+By default, if you are running a web application, the session is bound to the thread for
+the entire processing of the request (i.e. the "Open Session in View" pattern). If you
+don't want this behavior add the following to your `application.properties`:
+
+
+----
+	spring.data.neo4j.open-in-view=false
+----
+
+
+
+[[boot-features-spring-data-neo4j-repositories]]
+==== Spring Data Neo4j repositories
+Spring Data includes repository support for Neo4j.
+
+In fact, both Spring Data JPA and Spring Data Neo4j share the same common
+infrastructure; so you could take the JPA example from earlier and, assuming that `City`
+is now a Neo4j OGM `@NodeEntity` rather than a JPA `@Entity`, it will work in the same
+way.
+
+TIP: You can customize entity scanning locations using the `@EntityScan` annotation.
+
+To enable repository support (and optionally support for `@Transactional`), add the
+following two annotations to your Spring configuration:
+
+[source,java,indent=0]
+----
+    @EnableNeo4jRepositories(basePackages = "com.example.myapp.repository")
+    @EnableTransactionManagement
+----
+
+==== Repository example
+[source,java,indent=0]
+----
+	package com.example.myapp.domain;
+
+	import org.springframework.data.domain.*;
+	import org.springframework.data.repository.*;
+
+	public interface CityRepository extends GraphRepository<City> {
+
+		Page<City> findAll(Pageable pageable);
+
+		City findByNameAndCountry(String name, String country);
+
+	}
+----
+
+TIP: For complete details of Spring Data Neo4j, including its rich object mapping
+technologies, refer to their http://projects.spring.io/spring-data-neo4j/[reference
+documentation].
+
+
+
+[[boot-features-gemfire]]
+=== Gemfire
+https://github.com/spring-projects/spring-data-gemfire[Spring Data Gemfire] provides
+convenient Spring-friendly tools for accessing the
+http://pivotal.io/big-data/pivotal-gemfire#details[Pivotal Gemfire] data management
+platform. There is a `spring-boot-starter-data-gemfire` '`Starter`' for collecting the
+dependencies in a convenient way. There is currently no auto-configuration support for
+Gemfire, but you can enable Spring Data Repositories with a
+https://github.com/spring-projects/spring-data-gemfire/blob/master/src/main/java/org/springframework/data/gemfire/repository/config/EnableGemfireRepositories.java[single annotation (`@EnableGemfireRepositories`)].
+
+
+
+[[boot-features-solr]]
+=== Solr
+http://lucene.apache.org/solr/[Apache Solr] is a search engine. Spring Boot offers basic
+auto-configuration for the Solr 5 client library and abstractions on top of it provided by
+https://github.com/spring-projects/spring-data-solr[Spring Data Solr]. There is
+a `spring-boot-starter-data-solr` '`Starter`' for collecting the dependencies in a
+convenient way.
+
+
+[[boot-features-connecting-to-solr]]
+==== Connecting to Solr
+You can inject an auto-configured `SolrClient` instance as you would any other Spring
+bean. By default the instance will attempt to connect to a server using
+`http://localhost:8983/solr`:
+
+[source,java,indent=0]
+----
+	@Component
+	public class MyBean {
+
+		private SolrClient solr;
+
+		@Autowired
+		public MyBean(SolrClient solr) {
+			this.solr = solr;
+		}
+
+		// ...
+
+	}
+----
+
+If you add a `@Bean` of your own of type `SolrClient` it will replace the default.
+
+
+
+[[boot-features-spring-data-solr-repositories]]
+==== Spring Data Solr repositories
+Spring Data includes repository support for Apache Solr. As with the JPA repositories
+discussed earlier, the basic principle is that queries are constructed for you
+automatically based on method names.
+
+In fact, both Spring Data JPA and Spring Data Solr share the same common infrastructure;
+so you could take the JPA example from earlier and, assuming that `City` is now a
+`@SolrDocument` class rather than a JPA `@Entity`, it will work in the same way.
+
+TIP: For complete details of Spring Data Solr, refer to their
+http://projects.spring.io/spring-data-solr/[reference documentation].
+
+
+
+[[boot-features-elasticsearch]]
+=== Elasticsearch
+http://www.elasticsearch.org/[Elasticsearch] is an open source, distributed,
+real-time search and analytics engine. Spring Boot offers basic auto-configuration for
+the Elasticsearch and abstractions on top of it provided by
+https://github.com/spring-projects/spring-data-elasticsearch[Spring Data Elasticsearch].
+There is a `spring-boot-starter-data-elasticsearch` '`Starter`' for collecting the
+dependencies in a convenient way. Spring Boot also supports
+https://github.com/searchbox-io/Jest[Jest].
+
+
+
+[[boot-features-connecting-to-elasticsearch-jest]]
+==== Connecting to Elasticsearch using Jest
+If you have `Jest` on the classpath, you can inject an auto-configured `JestClient`
+targeting `http://localhost:9200` by default. You can further tune how the client is
+configured:
+
+[source,properties,indent=0]
+----
+	spring.elasticsearch.jest.uris=http://search.example.com:9200
+	spring.elasticsearch.jest.read-timeout=10000
+	spring.elasticsearch.jest.username=user
+	spring.elasticsearch.jest.password=secret
+----
+
+You can also register an arbitrary number of beans implementing
+`HttpClientConfigBuilderCustomizer` for more advanced customizations. The example below
+tunes additional HTTP settings:
+
+[source,java,indent=0]
+----
+include::{code-examples}/elasticsearch/jest/JestClientCustomizationExample.java[tag=customizer]
+----
+
+To take full control over the registration, define a `JestClient` bean.
+
+
+
+[[boot-features-connecting-to-elasticsearch-spring-data]]
+==== Connecting to Elasticsearch using Spring Data
+You can inject an auto-configured `ElasticsearchTemplate` or Elasticsearch `Client`
+instance as you would any other Spring Bean. By default the instance will embed a
+local in-memory server (a `Node` in Elasticsearch terms) and use the current working
+directory as the home directory for the server. In this setup, the first thing to do
+is to tell Elasticsearch where to store its files:
+
+[source,properties,indent=0]
+----
+	spring.data.elasticsearch.properties.path.home=/foo/bar
+----
+
+Alternatively, you can switch to a remote server (i.e. a `TransportClient`) by setting
+`spring.data.elasticsearch.cluster-nodes` to a comma-separated '`host:port`' list.
+
+[source,properties,indent=0]
+----
+	spring.data.elasticsearch.cluster-nodes=localhost:9300
+----
+
+[source,java,indent=0]
+----
+	@Component
+	public class MyBean {
+
+		private ElasticsearchTemplate template;
+
+		@Autowired
+		public MyBean(ElasticsearchTemplate template) {
+			this.template = template;
+		}
+
+		// ...
+
+	}
+----
+
+If you add a `@Bean` of your own of type `ElasticsearchTemplate` it will replace the
+default.
+
+
+
+[[boot-features-spring-data-elasticsearch-repositories]]
+==== Spring Data Elasticsearch repositories
+Spring Data includes repository support for Elasticsearch. As with the JPA repositories
+discussed earlier, the basic principle is that queries are constructed for you
+automatically based on method names.
+
+In fact, both Spring Data JPA and Spring Data Elasticsearch share the same common
+infrastructure; so you could take the JPA example from earlier and, assuming that
+`City` is now an Elasticsearch `@Document` class rather than a JPA `@Entity`, it will
+work in the same way.
+
+TIP: For complete details of Spring Data Elasticsearch, refer to their
+http://docs.spring.io/spring-data/elasticsearch/docs/[reference documentation].
+
+
+
+[[boot-features-cassandra]]
+=== Cassandra
+http://cassandra.apache.org/[Cassandra] is an open source, distributed database management
+system designed to handle large amounts of data across many commodity servers. Spring Boot
+offers auto-configuration for Cassandra and abstractions on top of it provided by
+https://github.com/spring-projects/spring-data-cassandra[Spring Data Cassandra].
+There is a `spring-boot-starter-data-cassandra` '`Starter`' for collecting the
+dependencies in a convenient way.
+
+
+
+[[boot-features-connecting-to-cassandra]]
+==== Connecting to Cassandra
+You can inject an auto-configured `CassandraTemplate` or a Cassandra `Session`
+instance as you would with any other Spring Bean. The `spring.data.cassandra.*`
+properties can be used to customize the connection. Generally you will provide
+`keyspace-name` and `contact-points` properties:
+
+[source,properties,indent=0]
+----
+	spring.data.cassandra.keyspace-name=mykeyspace
+	spring.data.cassandra.contact-points=cassandrahost1,cassandrahost2
+----
+
+[source,java,indent=0]
+----
+	@Component
+	public class MyBean {
+
+		private CassandraTemplate template;
+
+		@Autowired
+		public MyBean(CassandraTemplate template) {
+			this.template = template;
+		}
+
+		// ...
+
+	}
+----
+
+If you add a `@Bean` of your own of type `CassandraTemplate` it will replace the
+default.
+
+
+
+[[boot-features-spring-data-cassandra-repositories]]
+==== Spring Data Cassandra repositories
+Spring Data includes basic repository support for Cassandra. Currently this is more
+limited than the JPA repositories discussed earlier, and will need to annotate finder
+methods with `@Query`.
+
+TIP: For complete details of Spring Data Cassandra, refer to their
+http://docs.spring.io/spring-data/cassandra/docs/[reference documentation].
+
+
+
+[[boot-features-couchbase]]
+=== Couchbase
+http://www.couchbase.com/[Couchbase] is an open-source, distributed multi-model NoSQL
+document-oriented database that is optimized for interactive applications. Spring Boot
+offers auto-configuration for Couchbase and abstractions on top of it provided by
+https://github.com/spring-projects/spring-data-couchbase[Spring Data Couchbase].
+There is a `spring-boot-starter-data-couchbase` '`Starter`' for collecting the
+dependencies in a convenient way.
+
+
+
+[[boot-features-connecting-to-couchbase]]
+==== Connecting to Couchbase
+You can very easily get a `Bucket` and `Cluster` by adding the Couchbase SDK and some
+configuration. The `spring.couchbase.*` properties can be used to customize the
+connection. Generally you will provide the bootstrap hosts, bucket name and password:
+
+[source,properties,indent=0]
+----
+	spring.couchbase.bootstrap-hosts=my-host-1,192.168.1.123
+	spring.couchbase.bucket.name=my-bucket
+	spring.couchbase.bucket.password=secret
+----
+
+[TIP]
+====
+You need to provide _at least_ the bootstrap host(s), in which case the bucket name
+is `default` and the password is the empty String. Alternatively, you can define your
+own `org.springframework.data.couchbase.config.CouchbaseConfigurer` `@Bean` to take
+control over the whole configuration.
+====
+
+It is also possible to customize some of the `CouchbaseEnvironment` settings. For instance
+the following configuration changes the timeout to use to open a new `Bucket` and enables
+SSL support:
+
+[source,properties,indent=0]
+----
+	spring.couchbase.env.timeouts.connect=3000
+	spring.couchbase.env.ssl.key-store=/location/of/keystore.jks
+	spring.couchbase.env.ssl.key-store-password=secret
+----
+
+Check the `spring.couchbase.env.*` properties for more details.
+
+
+
+[[boot-features-spring-data-couchbase-repositories]]
+==== Spring Data Couchbase repositories
+Spring Data includes repository support for Couchbase. For complete details of Spring
+Data Couchbase, refer to their
+http://docs.spring.io/spring-data/couchbase/docs/current/reference/html/[reference documentation].
+
+You can inject an auto-configured `CouchbaseTemplate` instance as you would with any
+other Spring Bean as long as a _default_ `CouchbaseConfigurer` is available (that
+happens when you enable the couchbase support as explained above).
+
+
+[source,java,indent=0]
+----
+	@Component
+	public class MyBean {
+
+		private final CouchbaseTemplate template;
+
+		@Autowired
+		public MyBean(CouchbaseTemplate template) {
+			this.template = template;
+		}
+
+		// ...
+
+	}
+----
+
+There are a few beans that you can define in your own configuration to override those
+provided by the auto-configuration:
+
+* A `CouchbaseTemplate` `@Bean` with name `couchbaseTemplate`
+* An `IndexManager` `@Bean` with name `couchbaseIndexManager`
+* A `CustomConversions` `@Bean` with name `couchbaseCustomConversions`
+
+To avoid hard-coding those names in your own config, you can reuse `BeanNames` provided
+by Spring Data Couchbase. For instance, you can customize the converters to use as
+follows:
+
+[source,java,indent=0]
+----
+	@Configuration
+	public class SomeConfiguration {
+
+		@Bean(BeanNames.COUCHBASE_CUSTOM_CONVERSIONS)
+		public CustomConversions myCustomConversions() {
+			return new CustomConversions(...);
+		}
+
+		// ...
+
+	}
+----
+
+TIP: If you want to fully bypass the auto-configuration for Spring Data Couchbase, provide
+your own `org.springframework.data.couchbase.config.AbstractCouchbaseDataConfiguration`
+implementation.
+
+
+
+[[boot-features-ldap]]
+=== LDAP
+https://en.wikipedia.org/wiki/Lightweight_Directory_Access_Protocol[LDAP] (Lightweight
+Directory Access Protocol) is an open, vendor-neutral, industry standard application
+protocol for accessing and maintaining distributed directory information services over an
+IP network. Spring Boot offers auto-configuration for any compliant LDAP server as well
+as support for the embedded in-memory LDAP server from
+https://www.ldap.com/unboundid-ldap-sdk-for-java[UnboundID].
+
+LDAP abstractions are provided by
+https://github.com/spring-projects/spring-data-ldap[Spring Data LDAP].
+There is a `spring-boot-starter-data-ldap` '`Starter`' for collecting the dependencies in
+a convenient way.
+
+
+
+[[boot-features-ldap-connecting]]
+==== Connecting to an LDAP server
+To connect to an LDAP server make sure you declare a dependency on the
+`spring-boot-starter-data-ldap` '`Starter`' or `spring-ldap-core` then declare the
+URLs of your server in your application.properties:
+
+[source,properties,indent=0]
+----
+	spring.ldap.urls=ldap://myserver:1235
+	spring.ldap.username=admin
+	spring.ldap.password=secret
+----
+
+If you need to customize connection settings you can use the `spring.ldap.base` and
+`spring.ldap.base-environment` properties.
+
+
+
+[[boot-features-ldap-spring-data-repositories]]
+==== Spring Data LDAP repositories
+Spring Data includes repository support for LDAP. For complete details of Spring
+Data LDAP, refer to their
+http://docs.spring.io/spring-data/ldap/docs/1.0.x/reference/html/[reference documentation].
+
+You can also inject an auto-configured `LdapTemplate` instance as you would with any
+other Spring Bean.
+
+
+[source,java,indent=0]
+----
+	@Component
+	public class MyBean {
+
+		private final LdapTemplate template;
+
+		@Autowired
+		public MyBean(LdapTemplate template) {
+			this.template = template;
+		}
+
+		// ...
+
+	}
+----
+
+
+
+[[boot-features-ldap-embedded]]
+==== Embedded in-memory LDAP server
+For testing purposes Spring Boot supports auto-configuration of an in-memory LDAP server
+from https://www.ldap.com/unboundid-ldap-sdk-for-java[UnboundID]. To configure the server
+add a dependency to `com.unboundid:unboundid-ldapsdk` and declare a `base-dn` property:
+
+[source,properties,indent=0]
+----
+	spring.ldap.embedded.base-dn=dc=spring,dc=io
+----
+
+By default the server will start on a random port and they trigger the regular LDAP support
+(there is no need to specify a `spring.ldap.urls` property).
+
+If there is a `schema.ldif` file on your classpath it will be used to initialize the
+server. You can also use the `spring.ldap.embedded.ldif` property if you want to load
+the initialization script from a different resource.
+
+By default, a standard schema will be used to validate `LDIF` files, you can turn off
+validation altogether using the `spring.ldap.embedded.validation.enabled` property. If
+you have custom attributes, you can use `spring.ldap.embedded.validation.schema` to define
+your custom attribute types or object classes.
+
+
