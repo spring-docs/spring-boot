@@ -216,7 +216,7 @@ If you need to test these lower-level concerns, you can start a fully running se
 If you need to start a full running server, we recommend that you use random ports.
 If you use `@SpringBootTest(webEnvironment=WebEnvironment.RANDOM_PORT)`, an available port is picked at random each time your test runs.
 
-The `@LocalServerPort` annotation can be used to xref:howto:howto-embedded-web-servers:howto-discover-the-http-port-at-runtime.adoc#howto-discover-the-http-port-at-runtime[inject the actual port used] into your test.
+The `@LocalServerPort` annotation can be used to xref:howto:howto-embedded-web-servers.adoc#howto-discover-the-http-port-at-runtime[inject the actual port used] into your test.
 For convenience, tests that need to make REST calls to the started server can additionally `@Autowire` a {spring-framework-docs}testing.html#webtestclient-tests[`WebTestClient`], which resolves relative links to the running server and comes with a dedicated API for verifying responses, as shown in the following example:
 
 [source,java,indent=0]

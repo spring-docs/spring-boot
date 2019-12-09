@@ -193,7 +193,7 @@ The preceding example YAML corresponds to the following `application.properties`
 	server.port=9000
 ----
 
-See "`xref:boot-features:boot-features-external-config:boot-features-external-config-yaml.adoc#boot-features-external-config-yaml[boot-features-external-config-yaml]`" in the '`Spring Boot features`' section for more information about YAML.
+See "`xref:boot-features:boot-features-external-config.adoc#boot-features-external-config-yaml[boot-features-external-config-yaml]`" in the '`Spring Boot features`' section for more information about YAML.
 
 
 

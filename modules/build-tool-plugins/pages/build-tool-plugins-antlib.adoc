@@ -21,7 +21,7 @@ You need to remember to start Ant using the `-lib` option, as shown in the follo
 	$ ant -lib <folder containing spring-boot-antlib-{spring-boot-version}.jar>
 ----
 
-TIP: The "`Using Spring Boot`" section includes a more complete example of xref:using-boot:using-boot-build-systems:using-boot-ant.adoc#using-boot-ant[ using Apache Ant with `spring-boot-antlib`].
+TIP: The "`Using Spring Boot`" section includes a more complete example of xref:using-boot:using-boot-build-systems.adoc#using-boot-ant[ using Apache Ant with `spring-boot-antlib`].
 
 
 

@@ -115,7 +115,7 @@ These features are described in six enums (in Jackson) that map onto properties 
 |===
 
 For example, to enable pretty print, set `spring.jackson.serialization.indent_output=true`.
-Note that, thanks to the use of xref:boot-features:boot-features-external-config:boot-features-external-config-typesafe-configuration-properties.adoc#boot-features-external-config-relaxed-binding[ relaxed binding], the case of `indent_output` does not have to match the case of the corresponding enum constant, which is `INDENT_OUTPUT`.
+Note that, thanks to the use of xref:boot-features:boot-features-external-config.adoc#boot-features-external-config-relaxed-binding[ relaxed binding], the case of `indent_output` does not have to match the case of the corresponding enum constant, which is `INDENT_OUTPUT`.
 
 This environment-based configuration is applied to the auto-configured `Jackson2ObjectMapperBuilder` bean and applies to any mappers created by using the builder, including the auto-configured `ObjectMapper` bean.
 

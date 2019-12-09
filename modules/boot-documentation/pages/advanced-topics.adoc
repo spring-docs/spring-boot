@@ -3,6 +3,6 @@ include::ROOT:partial$attributes.adoc[]
 == Advanced Topics
 Finally, we have a few topics for more advanced users:
 
-* *Spring Boot Applications Deployment:* xref:deployment:cloud-deployment.adoc#cloud-deployment[ Cloud Deployment] | xref:deployment:deployment-install:deployment-service.adoc#deployment-service[ OS Service]
+* *Spring Boot Applications Deployment:* xref:deployment:cloud-deployment.adoc#cloud-deployment[ Cloud Deployment] | xref:deployment:deployment-install.adoc#deployment-service[ OS Service]
 * *Build tool plugins:* xref:build-tool-plugins:build-tool-plugins-maven-plugin.adoc#build-tool-plugins-maven-plugin[ Maven] | xref:build-tool-plugins:build-tool-plugins-gradle-plugin.adoc#build-tool-plugins-gradle-plugin[ Gradle]
 * *Appendix:* xref:appendix:common-application-properties.adoc#common-application-properties[Application Properties] | xref:appendix:configuration-metadata.adoc#configuration-metadata[Configuration Metadata] | xref:appendix:auto-configuration-classes.adoc#auto-configuration-classes[Auto-configuration Classes] | xref:appendix:test-auto-configuration.adoc#test-auto-configuration[Test Auto-configuration Annotations] | xref:appendix:executable-jar.adoc#executable-jar[Executable Jars] | <<appendix-dependency-versions.adoc#appendex-dependency-versions,Dependency Versions>>

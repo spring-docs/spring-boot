@@ -14,7 +14,7 @@ Devtools works by monitoring the classpath for changes.
 This means that static resource changes must be "built" for the change to take effect.
 By default, this happens automatically in Eclipse when you save your changes.
 In IntelliJ IDEA, the Make Project command triggers the necessary build.
-Due to the xref:using-boot:using-boot-devtools:using-boot-devtools-restart.adoc#using-boot-devtools-restart-exclude[ default restart exclusions], changes to static resources do not trigger a restart of your application.
+Due to the xref:using-boot:using-boot-devtools.adoc#using-boot-devtools-restart-exclude[ default restart exclusions], changes to static resources do not trigger a restart of your application.
 They do, however, trigger a live reload.
 
 Alternatively, running in an IDE (especially with debugging on) is a good way to do development (all modern IDEs allow reloading of static resources and usually also allow hot-swapping of Java class changes).
@@ -27,7 +27,7 @@ You can use that with an external css/js compiler process if you are writing tha
 [[howto-reload-thymeleaf-template-content]]
 === Reload Templates without Restarting the Container
 Most of the templating technologies supported by Spring Boot include a configuration option to disable caching (described later in this document).
-If you use the `spring-boot-devtools` module, these properties are xref:using-boot:using-boot-devtools:using-boot-devtools-property-defaults.adoc#using-boot-devtools-property-defaults[automatically configured] for you at development time.
+If you use the `spring-boot-devtools` module, these properties are xref:using-boot:using-boot-devtools.adoc#using-boot-devtools-property-defaults[automatically configured] for you at development time.
 
 
 

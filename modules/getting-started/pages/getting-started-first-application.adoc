@@ -114,7 +114,7 @@ For simplicity, we continue to use a plain text editor for this example.
 Spring Boot provides a number of "`Starters`" that let you add jars to your classpath.
 Our applications for smoke tests use the `spring-boot-starter-parent` in the `parent` section of the POM.
 The `spring-boot-starter-parent` is a special starter that provides useful Maven defaults.
-It also provides a xref:using-boot:using-boot-build-systems:using-boot-dependency-management.adoc#using-boot-dependency-management[`dependency-management`] section so that you can omit `version` tags for "`blessed`" dependencies.
+It also provides a xref:using-boot:using-boot-build-systems.adoc#using-boot-dependency-management[`dependency-management`] section so that you can omit `version` tags for "`blessed`" dependencies.
 
 Other "`Starters`" provide dependencies that you are likely to need when developing a specific type of application.
 Since we are developing a web application, we add a `spring-boot-starter-web` dependency.

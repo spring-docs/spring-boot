@@ -889,12 +889,12 @@ Common server settings include:
 * Network settings: Listen port for incoming HTTP requests (`server.port`), interface address to bind to `server.address`, and so on.
 * Session settings: Whether the session is persistent (`server.servlet.session.persistent`), session timeout (`server.servlet.session.timeout`), location of session data (`server.servlet.session.store-dir`), and session-cookie configuration (`server.servlet.session.cookie.*`).
 * Error management: Location of the error page (`server.error.path`) and so on.
-* xref:howto:howto-embedded-web-servers:howto-configure-ssl.adoc#howto-configure-ssl[SSL]
-* xref:howto:howto-embedded-web-servers:how-to-enable-http-response-compression.adoc#how-to-enable-http-response-compression[HTTP compression]
+* xref:howto:howto-embedded-web-servers.adoc#howto-configure-ssl[SSL]
+* xref:howto:howto-embedded-web-servers.adoc#how-to-enable-http-response-compression[HTTP compression]
 
 Spring Boot tries as much as possible to expose common settings, but this is not always possible.
 For those cases, dedicated namespaces offer server-specific customizations (see `server.tomcat` and `server.undertow`).
-For instance, xref:howto:howto-embedded-web-servers:howto-configure-accesslogs.adoc#howto-configure-accesslogs[access logs] can be configured with specific features of the embedded servlet container.
+For instance, xref:howto:howto-embedded-web-servers.adoc#howto-configure-accesslogs[access logs] can be configured with specific features of the embedded servlet container.
 
 TIP: See the {spring-boot-autoconfigure-module-code}/web/ServerProperties.java[`ServerProperties`] class for a complete list.
 

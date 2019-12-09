@@ -55,7 +55,7 @@ For example, when an application with the following properties is run by using t
 ----
 
 NOTE: Remember that the `spring.profiles` property can be defined in a YAML document to determine when this particular document is included in the configuration.
-See xref:howto:howto-properties-and-configuration:howto-change-configuration-depending-on-the-environment.adoc#howto-change-configuration-depending-on-the-environment[howto-change-configuration-depending-on-the-environment] for more details.
+See xref:howto:howto-properties-and-configuration.adoc#howto-change-configuration-depending-on-the-environment[howto-change-configuration-depending-on-the-environment] for more details.
 
 
 

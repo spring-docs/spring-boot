@@ -141,7 +141,7 @@ To build a war file that is both executable and deployable into an external cont
 	</project>
 ----
 
-TIP: See the "`xref:howto:howto-traditional-deployment:howto-create-a-deployable-war-file.adoc#howto-create-a-deployable-war-file[howto-create-a-deployable-war-file]`" section for more details on how to create a deployable war file.
+TIP: See the "`xref:howto:howto-traditional-deployment.adoc#howto-create-a-deployable-war-file[howto-create-a-deployable-war-file]`" section for more details on how to create a deployable war file.
 
 Advanced configuration options and examples are available in the {spring-boot-maven-plugin-docs}[plugin info page].
 

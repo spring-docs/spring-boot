@@ -11,7 +11,7 @@ The {spring-framework}[Spring Framework] provides extensive support for working 
 Java's `javax.sql.DataSource` interface provides a standard method of working with database connections.
 Traditionally, a 'DataSource' uses a `URL` along with some credentials to establish a database connection.
 
-TIP: See xref:howto:howto-data-access:howto-configure-a-datasource.adoc#howto-configure-a-datasource[the "`How-to`" section] for more advanced examples, typically to take full control over the configuration of the DataSource.
+TIP: See xref:howto:howto-data-access.adoc#howto-configure-a-datasource[the "`How-to`" section] for more advanced examples, typically to take full control over the configuration of the DataSource.
 
 
 
@@ -237,7 +237,7 @@ A typical entity class resembles the following example:
 ----
 
 TIP: You can customize entity scanning locations by using the `@EntityScan` annotation.
-See the "`xref:howto:howto-data-access:howto-separate-entity-definitions-from-spring-configuration.adoc#howto-separate-entity-definitions-from-spring-configuration[howto-separate-entity-definitions-from-spring-configuration]`" how-to.
+See the "`xref:howto:howto-data-access.adoc#howto-separate-entity-definitions-from-spring-configuration[howto-separate-entity-definitions-from-spring-configuration]`" how-to.
 
 
 
