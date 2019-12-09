@@ -5,4 +5,4 @@ Check out the https://www.cloudfoundry.org/[Cloud Foundry], https://www.heroku.c
 These are just four of the most popular Java PaaS providers.
 Since Spring Boot is so amenable to cloud-based deployment, you can freely consider other providers as well.
 
-The next section goes on to cover the _xref:spring-boot-reference-documentation:cli.adoc#cli[ Spring Boot CLI]_, or you can jump ahead to read about _xref:spring-boot-reference-documentation:build-tool-plugins.adoc#build-tool-plugins[ build tool plugins]_.
+The next section goes on to cover the _xref:cli:cli.adoc#cli[ Spring Boot CLI]_, or you can jump ahead to read about _xref:build-tool-plugins:build-tool-plugins.adoc#build-tool-plugins[ build tool plugins]_.

@@ -865,7 +865,7 @@ For example, you could add the following settings to your `application.propertie
 
 [TIP]
 ====
-Rather than hardcoding those values, you could also xref:spring-boot-reference-documentation:howto.adoc#howto-automatic-expansion[expand info properties at build time].
+Rather than hardcoding those values, you could also xref:howto:howto-properties-and-configuration:howto-automatic-expansion.adoc#howto-automatic-expansion[expand info properties at build time].
 
 Assuming you use Maven, you could rewrite the preceding example as follows:
 
@@ -885,7 +885,7 @@ Another useful feature of the `info` endpoint is its ability to publish informat
 If a `GitProperties` bean is available, the `git.branch`, `git.commit.id`, and `git.commit.time` properties are exposed.
 
 TIP: A `GitProperties` bean is auto-configured if a `git.properties` file is available at the root of the classpath.
-See "xref:spring-boot-reference-documentation:howto.adoc#howto-git-info[Generate git information]" for more details.
+See "xref:howto:howto-build:howto-git-info.adoc#howto-git-info[Generate git information]" for more details.
 
 If you want to display the full git information (that is, the full content of `git.properties`), use the configprop:management.info.git.mode[] property, as follows:
 
@@ -902,7 +902,7 @@ If a `BuildProperties` bean is available, the `info` endpoint can also publish i
 This happens if a `META-INF/build-info.properties` file is available in the classpath.
 
 TIP: The Maven and Gradle plugins can both generate that file.
-See "xref:spring-boot-reference-documentation:howto.adoc#howto-build-info[Generate build information]" for more details.
+See "xref:howto:howto-build:howto-build-info.adoc#howto-build-info[Generate build information]" for more details.
 
 
 

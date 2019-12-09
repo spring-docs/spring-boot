@@ -4,4 +4,4 @@ include::ROOT:partial$attributes.adoc[]
 If you are interested in how the build tool plugins work, you can look at the {spring-boot-code}/spring-boot-project/spring-boot-tools[`spring-boot-tools`] module on GitHub.
 More technical details of the executable jar format are covered in <<appendix-executable-jar-format#executable-jar,the appendix>>.
 
-If you have specific build-related questions, you can check out the "`xref:spring-boot-reference-documentation:howto.adoc#howto[ how-to]`" guides.
+If you have specific build-related questions, you can check out the "`xref:howto:howto.adoc#howto[ how-to]`" guides.

@@ -37,8 +37,8 @@ Ubuntu users can run `sudo apt-get install maven`.
 Windows users with https://chocolatey.org/[Chocolatey] can run `choco install maven` from an elevated (administrator) prompt.
 
 Spring Boot dependencies use the `org.springframework.boot` `groupId`.
-Typically, your Maven POM file inherits from the `spring-boot-starter-parent` project and declares dependencies to one or more xref:spring-boot-reference-documentation:using-boot.adoc#using-boot-starter["`Starters`"].
-Spring Boot also provides an optional xref:spring-boot-reference-documentation:build-tool-plugins.adoc#build-tool-plugins-maven-plugin[ Maven plugin] to create executable jars.
+Typically, your Maven POM file inherits from the `spring-boot-starter-parent` project and declares dependencies to one or more xref:using-boot:using-boot-build-systems:using-boot-starter.adoc#using-boot-starter["`Starters`"].
+Spring Boot also provides an optional xref:build-tool-plugins:build-tool-plugins-maven-plugin.adoc#build-tool-plugins-maven-plugin[ Maven plugin] to create executable jars.
 
 The following listing shows a typical `pom.xml` file:
 
@@ -121,7 +121,7 @@ endif::[]
 
 TIP: The `spring-boot-starter-parent` is a great way to use Spring Boot, but it might not be suitable all of the time.
 Sometimes you may need to inherit from a different parent POM, or you might not like our default settings.
-In those cases, see xref:spring-boot-reference-documentation:using-boot.adoc#using-boot-maven-without-a-parent[using-boot-maven-without-a-parent] for an alternative solution that uses an `import` scope.
+In those cases, see xref:using-boot:using-boot-build-systems:using-boot-maven.adoc#using-boot-maven-without-a-parent[using-boot-maven-without-a-parent] for an alternative solution that uses an `import` scope.
 
 
 
@@ -132,8 +132,8 @@ Spring Boot is compatible with 5.x and 6.x.
 If you do not already have Gradle installed, you can follow the instructions at https://gradle.org.
 
 Spring Boot dependencies can be declared by using the `org.springframework.boot` `group`.
-Typically, your project declares dependencies to one or more xref:spring-boot-reference-documentation:using-boot.adoc#using-boot-starter[ "`Starters`"].
-Spring Boot provides a useful xref:spring-boot-reference-documentation:build-tool-plugins.adoc#build-tool-plugins-gradle-plugin[ Gradle plugin] that can be used to simplify dependency declarations and to create executable jars.
+Typically, your project declares dependencies to one or more xref:using-boot:using-boot-build-systems:using-boot-starter.adoc#using-boot-starter[ "`Starters`"].
+Spring Boot provides a useful xref:build-tool-plugins:build-tool-plugins-gradle-plugin.adoc#build-tool-plugins-gradle-plugin[ Gradle plugin] that can be used to simplify dependency declarations and to create executable jars.
 
 .Gradle Wrapper
 ****

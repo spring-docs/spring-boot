@@ -128,7 +128,7 @@ The actual application _now_ shows the banner (as overridden by configuration) a
 
 [[howto-change-the-location-of-external-properties]]
 === Change the Location of External Properties of an Application
-By default, properties from different sources are added to the Spring `Environment` in a defined order (see "`xref:spring-boot-reference-documentation:boot-features.adoc#boot-features-external-config[boot-features-external-config]`" in the '`Spring Boot features`' section for the exact order).
+By default, properties from different sources are added to the Spring `Environment` in a defined order (see "`xref:boot-features:boot-features-external-config.adoc#boot-features-external-config[boot-features-external-config]`" in the '`Spring Boot features`' section for the exact order).
 
 You can also provide the following System properties (or environment variables) to change the behavior:
 
@@ -193,7 +193,7 @@ The preceding example YAML corresponds to the following `application.properties`
 	server.port=9000
 ----
 
-See "`xref:spring-boot-reference-documentation:boot-features.adoc#boot-features-external-config-yaml[boot-features-external-config-yaml]`" in the '`Spring Boot features`' section for more information about YAML.
+See "`xref:boot-features:boot-features-external-config:boot-features-external-config-yaml.adoc#boot-features-external-config-yaml[boot-features-external-config-yaml]`" in the '`Spring Boot features`' section for more information about YAML.
 
 
 
@@ -217,7 +217,7 @@ In Spring Boot, you can also set the active profile in `application.properties`,
 A value set this way is replaced by the System property or environment variable setting but not by the `SpringApplicationBuilder.profiles()` method.
 Thus, the latter Java API can be used to augment the profiles without changing the defaults.
 
-See "`xref:spring-boot-reference-documentation:boot-features.adoc#boot-features-profiles[boot-features-profiles]`" in the "`Spring Boot features`" section for more information.
+See "`xref:boot-features:boot-features-profiles.adoc#boot-features-profiles[boot-features-profiles]`" in the "`Spring Boot features`" section for more information.
 
 
 
@@ -265,7 +265,7 @@ There is not (and technically cannot be) an exhaustive list of all supported pro
 
 A running application with the Actuator features has a `configprops` endpoint that shows all the bound and bindable properties available through `@ConfigurationProperties`.
 
-The appendix includes an xref:spring-boot-reference-documentation:appendix.adoc#common-application-properties[ `application.properties`] example with a list of the most common properties supported by Spring Boot.
+The appendix includes an xref:appendix:common-application-properties.adoc#common-application-properties[ `application.properties`] example with a list of the most common properties supported by Spring Boot.
 The definitive list comes from searching the source code for `@ConfigurationProperties` and `@Value` annotations as well as the occasional use of `Binder`.
 For more about the exact ordering of loading properties, see "<<spring-boot-features#boot-features-external-config>>".
 

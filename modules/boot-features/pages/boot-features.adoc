@@ -1,8 +1,9 @@
 include::ROOT:partial$attributes.adoc[]
 [[boot-features]]
+
 This section dives into the details of Spring Boot.
 Here you can learn about the key features that you may want to use and customize.
-If you have not already done so, you might want to read the "xref:spring-boot-reference-documentation:getting-started.adoc#getting-started[getting-started]" and "xref:spring-boot-reference-documentation:using-boot.adoc#using-boot[using-boot]" sections, so that you have a good grounding of the basics.
+If you have not already done so, you might want to read the "xref:getting-started:getting-started.adoc#getting-started[getting-started]" and "xref:using-boot:using-boot.adoc#using-boot[using-boot]" sections, so that you have a good grounding of the basics.
 
 
 

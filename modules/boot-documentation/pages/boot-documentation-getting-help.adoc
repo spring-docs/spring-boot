@@ -3,7 +3,7 @@ include::ROOT:partial$attributes.adoc[]
 == Getting Help
 If you have trouble with Spring Boot, we would like to help.
 
-* Try the xref:spring-boot-reference-documentation:howto.adoc#howto[ How-to documents].
+* Try the xref:howto:howto.adoc#howto[ How-to documents].
   They provide solutions to the most common questions.
 * Learn the Spring basics.
   Spring Boot builds on many other Spring projects.

@@ -1,12 +1,12 @@
 include::ROOT:partial$attributes.adoc[]
 
 == Working with Spring Boot
-Ready to actually start using Spring Boot? xref:spring-boot-reference-documentation:using-boot.adoc#using-boot[ We have you covered]:
+Ready to actually start using Spring Boot? xref:using-boot:using-boot.adoc#using-boot[ We have you covered]:
 
-* *Build systems:* xref:spring-boot-reference-documentation:using-boot.adoc#using-boot-maven[ Maven] | xref:spring-boot-reference-documentation:using-boot.adoc#using-boot-gradle[ Gradle] | xref:spring-boot-reference-documentation:using-boot.adoc#using-boot-ant[ Ant] | xref:spring-boot-reference-documentation:using-boot.adoc#using-boot-starter[ Starters]
-* *Best practices:* xref:spring-boot-reference-documentation:using-boot.adoc#using-boot-structuring-your-code[ Code Structure] | xref:spring-boot-reference-documentation:using-boot.adoc#using-boot-configuration-classes[ @Configuration] | xref:spring-boot-reference-documentation:using-boot.adoc#using-boot-auto-configuration[ @EnableAutoConfiguration] | xref:spring-boot-reference-documentation:using-boot.adoc#using-boot-spring-beans-and-dependency-injection[ Beans and Dependency Injection]
-* *Running your code:* xref:spring-boot-reference-documentation:using-boot.adoc#using-boot-running-from-an-ide[ IDE] | xref:spring-boot-reference-documentation:using-boot.adoc#using-boot-running-as-a-packaged-application[ Packaged] | xref:spring-boot-reference-documentation:using-boot.adoc#using-boot-running-with-the-maven-plugin[ Maven] | xref:spring-boot-reference-documentation:using-boot.adoc#using-boot-running-with-the-gradle-plugin[ Gradle]
-* *Packaging your app:* xref:spring-boot-reference-documentation:using-boot.adoc#using-boot-packaging-for-production[ Production jars]
-* *Spring Boot CLI:* xref:spring-boot-reference-documentation:cli.adoc#cli[ Using the CLI]
+* *Build systems:* xref:using-boot:using-boot-build-systems:using-boot-maven.adoc#using-boot-maven[ Maven] | xref:using-boot:using-boot-build-systems:using-boot-gradle.adoc#using-boot-gradle[ Gradle] | xref:using-boot:using-boot-build-systems:using-boot-ant.adoc#using-boot-ant[ Ant] | xref:using-boot:using-boot-build-systems:using-boot-starter.adoc#using-boot-starter[ Starters]
+* *Best practices:* xref:using-boot:using-boot-structuring-your-code.adoc#using-boot-structuring-your-code[ Code Structure] | xref:using-boot:using-boot-configuration-classes.adoc#using-boot-configuration-classes[ @Configuration] | xref:using-boot:using-boot-auto-configuration.adoc#using-boot-auto-configuration[ @EnableAutoConfiguration] | xref:using-boot:using-boot-spring-beans-and-dependency-injection.adoc#using-boot-spring-beans-and-dependency-injection[ Beans and Dependency Injection]
+* *Running your code:* xref:using-boot:using-boot-running-your-application:using-boot-running-from-an-ide.adoc#using-boot-running-from-an-ide[ IDE] | xref:using-boot:using-boot-running-your-application:using-boot-running-as-a-packaged-application.adoc#using-boot-running-as-a-packaged-application[ Packaged] | xref:using-boot:using-boot-running-your-application:using-boot-running-with-the-maven-plugin.adoc#using-boot-running-with-the-maven-plugin[ Maven] | xref:using-boot:using-boot-running-your-application:using-boot-running-with-the-gradle-plugin.adoc#using-boot-running-with-the-gradle-plugin[ Gradle]
+* *Packaging your app:* xref:using-boot:using-boot-packaging-for-production.adoc#using-boot-packaging-for-production[ Production jars]
+* *Spring Boot CLI:* xref:cli:cli.adoc#cli[ Using the CLI]
 
 

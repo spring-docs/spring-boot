@@ -1,5 +1,6 @@
 include::ROOT:partial$attributes.adoc[]
 [[howto]]
+
 This section provides answers to some common '`how do I do that...`' questions that often arise when using Spring Boot.
 Its coverage is not exhaustive, but it does cover quite a lot.
 
