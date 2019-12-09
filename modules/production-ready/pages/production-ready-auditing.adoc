@@ -1,17 +1,22 @@
 include::ROOT:partial$attributes.adoc[]
 [[production-ready-auditing]]
 == Auditing
-Spring Boot Actuator has a flexible audit framework that will publish events once Spring
-Security is in play ('`authentication success`', '`failure`' and '`access denied`'
-exceptions by default). This can be very useful for reporting, and also to implement a
-lock-out policy based on authentication failures. To customize published security events
-you can provide your own implementations of `AbstractAuthenticationAuditListener` and
-`AbstractAuthorizationAuditListener`.
+Once Spring Security is in play, Spring Boot Actuator has a flexible audit framework that publishes events (by default, "`authentication success`", "`failure`" and "`access denied`" exceptions).
+This feature can be very useful for reporting and for implementing a lock-out policy based on authentication failures.
 
-You can also choose to use the audit services for your own business events. To do that
-you can either inject the existing `AuditEventRepository` into your own components and
-use that directly, or you can simply publish `AuditApplicationEvent` via the Spring
-`ApplicationEventPublisher` (using `ApplicationEventPublisherAware`).
+Auditing can be enabled by providing a bean of type `AuditEventRepository` in your application's configuration.
+For convenience, Spring Boot offers an `InMemoryAuditEventRepository`.
+`InMemoryAuditEventRepository` has limited capabilities and we recommend using it only for development environments.
+For production environments, consider creating your own alternative `AuditEventRepository` implementation.
+
+
+
+[[production-ready-auditing-custom]]
+=== Custom Auditing
+To customize published security events, you can provide your own implementations of `AbstractAuthenticationAuditListener` and `AbstractAuthorizationAuditListener`.
+
+You can also use the audit services for your own business events.
+To do so, either inject the `AuditEventRepository` bean into your own components and use that directly or publish an `AuditApplicationEvent` with the Spring `ApplicationEventPublisher` (by implementing `ApplicationEventPublisherAware`).
 
 
 

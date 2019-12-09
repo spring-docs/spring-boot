@@ -1,39 +1,35 @@
 include::ROOT:partial$attributes.adoc[]
 [[production-ready-process-monitoring]]
-== Process monitoring
-In Spring Boot Actuator you can find a couple of classes to create files that are useful
-for process monitoring:
+== Process Monitoring
+In the `spring-boot` module, you can find two classes to create files that are often useful for process monitoring:
 
-* `ApplicationPidFileWriter` creates a file containing the application PID (by default in
-  the application directory with the file name `application.pid`).
-* `EmbeddedServerPortFileWriter` creates a file (or files) containing the ports of the
-  embedded server (by default in the application directory with the file name
-  `application.port`).
+* `ApplicationPidFileWriter` creates a file containing the application PID (by default, in the application directory with a file name of `application.pid`).
+* `WebServerPortFileWriter` creates a file (or files) containing the ports of the running web server (by default, in the application directory with a file name of `application.port`).
 
-These writers are not activated by default, but you can enable them in one of the ways
-described below.
+By default, these writers are not activated, but you can enable:
+
+* <<production-ready-process-monitoring-configuration,By Extending Configuration>>
+* <<production-ready-process-monitoring-programmatically>>
 
 
 
 [[production-ready-process-monitoring-configuration]]
-=== Extend configuration
-In `META-INF/spring.factories` file you can activate the listener(s) that
-writes a PID file. Example:
+=== Extending Configuration
+In the `META-INF/spring.factories` file, you can activate the listener(s) that writes a PID file, as shown in the following example:
 
 [indent=0]
 ----
 	org.springframework.context.ApplicationListener=\
-	org.springframework.boot.system.ApplicationPidFileWriter,\
-	org.springframework.boot.actuate.system.EmbeddedServerPortFileWriter
+	org.springframework.boot.context.ApplicationPidFileWriter,\
+	org.springframework.boot.web.context.WebServerPortFileWriter
 ----
 
 
 
 [[production-ready-process-monitoring-programmatically]]
 === Programmatically
-You can also activate a listener by invoking the `SpringApplication.addListeners(...)`
-method and passing the appropriate `Writer` object. This method also allows you to
-customize the file name and path via the `Writer` constructor.
+You can also activate a listener by invoking the `SpringApplication.addListeners(...)` method and passing the appropriate `Writer` object.
+This method also lets you customize the file name and path in the `Writer` constructor.
 
 
 

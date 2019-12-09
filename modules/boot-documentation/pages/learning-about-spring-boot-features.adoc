@@ -1,29 +1,14 @@
 include::ROOT:partial$attributes.adoc[]
 
-== Learning about Spring Boot features
+== Learning about Spring Boot Features
 Need more details about Spring Boot's core features?
-xref:boot-features:boot-features.adoc#boot-features[ This is for you]!
+xref:spring-boot-reference-documentation:boot-features.adoc#boot-features[ The following content is for you]:
 
-* *Core Features:*
-  xref:boot-features:boot-features-spring-application.adoc#boot-features-spring-application[ SpringApplication] |
-  xref:boot-features:boot-features-external-config.adoc#boot-features-external-config[ External Configuration] |
-  xref:boot-features:boot-features-profiles.adoc#boot-features-profiles[ Profiles] |
-  xref:boot-features:boot-features-logging.adoc#boot-features-logging[ Logging]
-* *Web Applications:*
-  xref:boot-features:boot-features-developing-web-applications.adoc#boot-features-spring-mvc[ MVC] |
-  xref:boot-features:boot-features-developing-web-applications.adoc#boot-features-embedded-container[ Embedded Containers]
-* *Working with data:*
-  xref:boot-features:boot-features-sql.adoc#boot-features-sql[ SQL] |
-  xref:boot-features:boot-features-nosql.adoc#boot-features-nosql[ NO-SQL]
-* *Messaging:*
-  xref:boot-features:boot-features-messaging.adoc#boot-features-messaging[ Overview] |
-  xref:boot-features:boot-features-messaging.adoc#boot-features-jms[ JMS]
-* *Testing:*
-  xref:boot-features:boot-features-testing.adoc#boot-features-testing[ Overview] |
-  xref:boot-features:boot-features-testing.adoc#boot-features-testing-spring-boot-applications[ Boot Applications] |
-  xref:boot-features:boot-features-testing.adoc#boot-features-test-utilities[ Utils]
-* *Extending:*
-  xref:boot-features:boot-features-developing-auto-configuration.adoc#boot-features-developing-auto-configuration[ Auto-configuration] |
-  xref:boot-features:boot-features-developing-auto-configuration.adoc#boot-features-condition-annotations[ @Conditions]
+* *Core Features:* xref:spring-boot-reference-documentation:boot-features.adoc#boot-features-spring-application[ SpringApplication] | xref:spring-boot-reference-documentation:boot-features.adoc#boot-features-external-config[ External Configuration] | xref:spring-boot-reference-documentation:boot-features.adoc#boot-features-profiles[ Profiles] | xref:spring-boot-reference-documentation:boot-features.adoc#boot-features-logging[ Logging]
+* *Web Applications:* xref:spring-boot-reference-documentation:boot-features.adoc#boot-features-spring-mvc[ MVC] | xref:spring-boot-reference-documentation:boot-features.adoc#boot-features-embedded-container[ Embedded Containers]
+* *Working with data:* xref:spring-boot-reference-documentation:boot-features.adoc#boot-features-sql[ SQL] | xref:spring-boot-reference-documentation:boot-features.adoc#boot-features-nosql[ NO-SQL]
+* *Messaging:* xref:spring-boot-reference-documentation:boot-features.adoc#boot-features-messaging[ Overview] | xref:spring-boot-reference-documentation:boot-features.adoc#boot-features-jms[ JMS]
+* *Testing:* xref:spring-boot-reference-documentation:boot-features.adoc#boot-features-testing[ Overview] | xref:spring-boot-reference-documentation:boot-features.adoc#boot-features-testing-spring-boot-applications[ Boot Applications] | xref:spring-boot-reference-documentation:boot-features.adoc#boot-features-test-utilities[ Utils]
+* *Extending:* xref:spring-boot-reference-documentation:boot-features.adoc#boot-features-developing-auto-configuration[ Auto-configuration] | xref:spring-boot-reference-documentation:boot-features.adoc#boot-features-condition-annotations[ @Conditions]
 
 

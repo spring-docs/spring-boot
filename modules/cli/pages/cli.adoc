@@ -1,14 +1,8 @@
 include::ROOT:partial$attributes.adoc[]
 [[cli]]
-= Spring Boot CLI
-
-
---
-The Spring Boot CLI is a command line tool that can be used if you want to quickly
-develop with Spring. It allows you to run Groovy scripts, which means that you have a
-familiar Java-like syntax, without so much boilerplate code. You can also bootstrap
-a new project or write your own command for it.
---
+The Spring Boot CLI is a command line tool that you can use if you want to quickly develop a Spring application.
+It lets you run Groovy scripts, which means that you have a familiar Java-like syntax without so much boilerplate code.
+You can also bootstrap a new project or write your own command for it.
 
 
 

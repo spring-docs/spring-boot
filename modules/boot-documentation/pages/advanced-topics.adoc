@@ -1,18 +1,8 @@
 include::ROOT:partial$attributes.adoc[]
 
-== Advanced topics
-Lastly, we have a few topics for the more advanced user.
+== Advanced Topics
+Finally, we have a few topics for more advanced users:
 
-* *Deploy Spring Boot Applications:*
-xref:deployment:cloud-deployment.adoc#cloud-deployment[ Cloud Deployment] |
-xref:deployment:deployment-install.adoc#deployment-service[ OS Service]
-* *Build tool plugins:*
-xref:build-tool-plugins:build-tool-plugins-maven-plugin.adoc#build-tool-plugins-maven-plugin[ Maven] |
-xref:build-tool-plugins:build-tool-plugins-gradle-plugin.adoc#build-tool-plugins-gradle-plugin[ Gradle]
-* *Appendix:*
-xref:appendix:common-application-properties.adoc#common-application-properties[ Application Properties] |
-xref:appendix:auto-configuration-classes.adoc#auto-configuration-classes[ Auto-configuration classes] |
-xref:appendix:executable-jar.adoc#executable-jar[ Executable Jars]
-
-
-
+* *Spring Boot Applications Deployment:* xref:spring-boot-reference-documentation:deployment.adoc#cloud-deployment[ Cloud Deployment] | xref:spring-boot-reference-documentation:deployment.adoc#deployment-service[ OS Service]
+* *Build tool plugins:* xref:spring-boot-reference-documentation:build-tool-plugins.adoc#build-tool-plugins-maven-plugin[ Maven] | xref:spring-boot-reference-documentation:build-tool-plugins.adoc#build-tool-plugins-gradle-plugin[ Gradle]
+* *Appendix:* xref:spring-boot-reference-documentation:appendix.adoc#common-application-properties[Application Properties] | xref:spring-boot-reference-documentation:appendix.adoc#configuration-metadata[Configuration Metadata] | xref:spring-boot-reference-documentation:appendix.adoc#auto-configuration-classes[Auto-configuration Classes] | xref:spring-boot-reference-documentation:appendix.adoc#test-auto-configuration[Test Auto-configuration Annotations] | xref:spring-boot-reference-documentation:appendix.adoc#executable-jar[Executable Jars] | <<appendix-dependency-versions.adoc#appendex-dependency-versions,Dependency Versions>>

@@ -1,13 +1,12 @@
 include::ROOT:partial$attributes.adoc[]
 [[boot-features-profiles]]
 == Profiles
-Spring Profiles provide a way to segregate parts of your application configuration and
-make it only available in certain environments.  Any `@Component` or `@Configuration` can
-be marked with `@Profile` to limit when it is loaded:
+Spring Profiles provide a way to segregate parts of your application configuration and make it be available only in certain environments.
+Any `@Component`, `@Configuration` or `@ConfigurationProperties` can be marked with `@Profile` to limit when it is loaded, as shown in the following example:
 
 [source,java,indent=0]
 ----
-	@Configuration
+	@Configuration(proxyBeanMethods = false)
 	@Profile("production")
 	public class ProductionConfiguration {
 
@@ -16,35 +15,33 @@ be marked with `@Profile` to limit when it is loaded:
 	}
 ----
 
-In the normal Spring way, you can use a `spring.profiles.active`
-`Environment` property to specify which profiles are active. You can
-specify the property in any of the usual ways, for example you could
-include it in your `application.properties`:
+NOTE: If `@ConfigurationProperties` beans are registered via `@EnableConfigurationProperties` instead of automatic scanning, the `@Profile` annotation needs to be specified on the `@Configuration` class that has the `@EnableConfigurationProperties` annotation.
+In the case where `@ConfigurationProperties` are scanned, `@Profile` can be specified on the `@ConfigurationProperties` class itself.
 
-[source,properties,indent=0]
+You can use a configprop:spring.profiles.active[] `Environment` property to specify which profiles are active.
+You can specify the property in any of the ways described earlier in this chapter.
+For example, you could include it in your `application.properties`, as shown in the following example:
+
+[source,properties,indent=0,configprops]
 ----
 	spring.profiles.active=dev,hsqldb
 ----
 
-or specify on the command line using the switch `--spring.profiles.active=dev,hsqldb`.
+You could also specify it on the command line by using the following switch: `--spring.profiles.active=dev,hsqldb`.
 
 
 
 [[boot-features-adding-active-profiles]]
-=== Adding active profiles
-The `spring.profiles.active` property follows the same ordering rules as other
-properties, the highest `PropertySource` will win. This means that you can specify
-active profiles in `application.properties` then *replace* them using the command line
-switch.
+=== Adding Active Profiles
+The configprop:spring.profiles.active[] property follows the same ordering rules as other properties: The highest `PropertySource` wins.
+This means that you can specify active profiles in `application.properties` and then *replace* them by using the command line switch.
 
-Sometimes it is useful to have profile-specific properties that *add* to the active
-profiles rather than replace them. The `spring.profiles.include` property can be used
-to unconditionally add active profiles. The `SpringApplication` entry point also has
-a Java API for setting additional profiles (i.e. on top of those activated by the
-`spring.profiles.active` property): see the `setAdditionalProfiles()` method.
+Sometimes, it is useful to have profil-specific properties that *add* to the active profiles rather than replace them.
+The configprop:spring.profiles.include[] property can be used to unconditionally add active profiles.
+The `SpringApplication` entry point also has a Java API for setting additional profiles (that is, on top of those activated by the configprop:spring.profiles.active[] property).
+See the `setAdditionalProfiles()` method in {spring-boot-module-api}/SpringApplication.html[SpringApplication].
 
-For example, when an application with following properties is run using the switch
-`--spring.profiles.active=prod` the `proddb` and `prodmq` profiles will also be activated:
+For example, when an application with the following properties is run by using the switch, `--spring.profiles.active=prod`, the `proddb` and `prodmq` profiles are also activated:
 
 [source,yaml,indent=0]
 ----
@@ -57,25 +54,22 @@ For example, when an application with following properties is run using the swit
 	  - prodmq
 ----
 
-NOTE: Remember that the `spring.profiles` property can be defined in a YAML document
-to determine when this particular document is included in the configuration. See
-<<howto-change-configuration-depending-on-the-environment>> for more details.
+NOTE: Remember that the `spring.profiles` property can be defined in a YAML document to determine when this particular document is included in the configuration.
+See xref:spring-boot-reference-documentation:howto.adoc#howto-change-configuration-depending-on-the-environment[howto-change-configuration-depending-on-the-environment] for more details.
 
 
 
 [[boot-features-programmatically-setting-profiles]]
-=== Programmatically setting profiles
-You can programmatically set active profiles by calling
-`SpringApplication.setAdditionalProfiles(...)` before your application runs. It is also
-possible to activate profiles using Spring's `ConfigurableEnvironment` interface.
+=== Programmatically Setting Profiles
+You can programmatically set active profiles by calling `SpringApplication.setAdditionalProfiles(...)` before your application runs.
+It is also possible to activate profiles by using Spring's `ConfigurableEnvironment` interface.
 
 
 
 [[boot-features-profile-specific-configuration]]
-=== Profile-specific configuration files
-Profile-specific variants of both `application.properties` (or `application.yml`) and
-files referenced via `@ConfigurationProperties` are considered as files are loaded.
-See _<<boot-features-external-config-profile-specific-properties>>_ for details.
+=== Profile-specific Configuration Files
+Profile-specific variants of both `application.properties` (or `application.yml`) and files referenced through `@ConfigurationProperties` are considered as files and loaded.
+See "<<boot-features-external-config-profile-specific-properties>>" for details.
 
 
 

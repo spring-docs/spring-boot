@@ -1,33 +1,40 @@
 include::ROOT:partial$attributes.adoc[]
 [[boot-features-session]]
 == Spring Session
-Spring Boot provides Spring Session auto-configuration for a wide range of stores:
+Spring Boot provides {spring-session}[Spring Session] auto-configuration for a wide range of data stores.
+When building a Servlet web application, the following stores can be auto-configured:
 
 * JDBC
-* MongoDB
 * Redis
 * Hazelcast
-* HashMap
+* MongoDB
 
-If Spring Session is available, you must choose the
-{sc-spring-boot-autoconfigure}/session/StoreType.{sc-ext}[`StoreType`] that you wish to
-use to store the sessions. For instance to use JDBC as backend store, you'd configure
-your application as follows:
+When building a reactive web application, the following stores can be auto-configured:
 
-[source,properties,indent=0]
+* Redis
+* MongoDB
+
+If a single Spring Session module is present on the classpath, Spring Boot uses that store implementation automatically.
+If you have more than one implementation, you must choose the {spring-boot-autoconfigure-module-code}/session/StoreType.java[`StoreType`] that you wish to use to store the sessions.
+For instance, to use JDBC as the back-end store, you can configure your application as follows:
+
+[source,properties,indent=0,configprops]
 ----
     spring.session.store-type=jdbc
 ----
 
 TIP: You can disable Spring Session by setting the `store-type` to `none`.
 
-Each store has specific additional settings. For instance it is possible to customize
-the name of the table for the jdbc store:
+Each store has specific additional settings.
+For instance, it is possible to customize the name of the table for the JDBC store, as shown in the following example:
 
-[source,properties,indent=0]
+[source,properties,indent=0,configprops]
 ----
     spring.session.jdbc.table-name=SESSIONS
 ----
+
+For setting the timeout of the session you can use the configprop:spring.session.timeout[] property.
+If that property is not set, the auto-configuration falls back to the value of configprop:server.servlet.session.timeout[].
 
 
 

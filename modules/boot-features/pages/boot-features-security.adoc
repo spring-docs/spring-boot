@@ -1,321 +1,263 @@
 include::ROOT:partial$attributes.adoc[]
 [[boot-features-security]]
 == Security
-If Spring Security is on the classpath then web applications will be secure by default
-with '`basic`' authentication on all HTTP endpoints. To add method-level security to a web
-application you can also add `@EnableGlobalMethodSecurity` with your desired settings.
-Additional information can be found in the {spring-security-reference}#jc-method[Spring
-Security Reference].
+If {spring-security}[Spring Security] is on the classpath, then web applications are secured by default.
+Spring Boot relies on Spring Security’s content-negotiation strategy to determine whether to use `httpBasic` or `formLogin`.
+To add method-level security to a web application, you can also add `@EnableGlobalMethodSecurity` with your desired settings.
+Additional information can be found in the {spring-security-docs}#jc-method[Spring Security Reference Guide].
 
-The default `AuthenticationManager` has a single user ('`user`' username and random
-password, printed at INFO level when the application starts up)
+The default `UserDetailsService` has a single user.
+The user name is `user`, and the password is random and is printed at INFO level when the application starts, as shown in the following example:
 
 [indent=0]
 ----
-	Using default security password: 78fa095d-3f4c-48b1-ad50-e24c31d5cf35
+	Using generated security password: 78fa095d-3f4c-48b1-ad50-e24c31d5cf35
 ----
 
-NOTE: If you fine-tune your logging configuration, ensure that the
-`org.springframework.boot.autoconfigure.security` category is set to log `INFO` messages,
-otherwise the default password will not be printed.
+NOTE: If you fine-tune your logging configuration, ensure that the `org.springframework.boot.autoconfigure.security` category is set to log `INFO`-level messages.
+Otherwise, the default password is not printed.
 
-You can change the password by providing a `security.user.password`. This and other useful
-properties are externalized via
-{sc-spring-boot-autoconfigure}/security/SecurityProperties.{sc-ext}[`SecurityProperties`]
-(properties prefix "security").
+You can change the username and password by providing a `spring.security.user.name` and `spring.security.user.password`.
 
-The default security configuration is implemented in `SecurityAutoConfiguration` and in
-the classes imported from there (`SpringBootWebSecurityConfiguration` for web security
-and `AuthenticationManagerConfiguration` for authentication configuration which is also
-relevant in non-web applications). To switch off the default web application security
-configuration completely you can add a bean with `@EnableWebSecurity` (this does not
-disable the authentication manager configuration or Actuator's security).
-To customize it you normally use external properties and beans of type
-`WebSecurityConfigurerAdapter` (e.g. to add form-based login).
+The basic features you get by default in a web application are:
 
-NOTE: If you add `@EnableWebSecurity` and also disable Actuator security, you will get
-the default form-based login for the entire application unless you add a custom
-`WebSecurityConfigurerAdapter`.
+* A `UserDetailsService` (or `ReactiveUserDetailsService` in case of a WebFlux application) bean with in-memory store and a single user with a generated password (see {spring-boot-module-api}/autoconfigure/security/SecurityProperties.User.html[`SecurityProperties.User`] for the properties of the user).
+* Form-based login or HTTP Basic security (depending on the `Accept` header in the request) for the entire application (including actuator endpoints if actuator is on the classpath).
+* A `DefaultAuthenticationEventPublisher` for publishing authentication events.
 
-To also switch off the authentication manager configuration
-you can add a bean of type `AuthenticationManager`, or else configure the
-global `AuthenticationManager` by autowiring an `AuthenticationManagerBuilder` into
-a method in one of your `@Configuration` classes. There are several secure applications in
-the {github-code}/spring-boot-samples/[Spring Boot samples] to get you started with common
-use cases.
+You can provide a different `AuthenticationEventPublisher` by adding a bean for it.
 
-The basic features you get out of the box in a web application are:
 
-* An `AuthenticationManager` bean with in-memory store and a single user (see
-  `SecurityProperties.User` for the properties of the user).
-* Ignored (insecure) paths for common static resource locations (`+/css/**+`, `+/js/**+`,
-  `+/images/**+`, `+/webjars/**+` and `+**/favicon.ico+`).
-* HTTP Basic security for all other endpoints.
-* Security events published to Spring's `ApplicationEventPublisher` (successful and
-  unsuccessful authentication and access denied).
-* Common low-level features (HSTS, XSS, caching) provided by Spring Security are
-  on by default.
-* Cross Site Request Forgery (CSRF) checks are disabled by default.
 
-All of the above can be switched on and off or modified using external properties
-(`+security.*+`). To override the access rules without changing any other auto-configured
-features add a `@Bean` of type `WebSecurityConfigurerAdapter` with
-`@Order(SecurityProperties.ACCESS_OVERRIDE_ORDER)` and configure it to meet your needs.
+[[boot-features-security-mvc]]
+=== MVC Security
+The default security configuration is implemented in `SecurityAutoConfiguration` and `UserDetailsServiceAutoConfiguration`.
+`SecurityAutoConfiguration` imports `SpringBootWebSecurityConfiguration` for web security and `UserDetailsServiceAutoConfiguration` configures authentication, which is also relevant in non-web applications.
+To switch off the default web application security configuration completely or to combine multiple Spring Security components such as OAuth 2 Client and Resource Server, add a bean of type `WebSecurityConfigurerAdapter` (doing so does not disable the `UserDetailsService` configuration or Actuator's security).
 
-NOTE: By default, a `WebSecurityConfigurerAdapter` will match any path. If you don't want
-to completely override Spring Boot's auto-configured access rules, your adapter must
-explicitly configure the paths that you do want to override.
+To also switch off the `UserDetailsService` configuration, you can add a bean of type `UserDetailsService`, `AuthenticationProvider`, or `AuthenticationManager`.
+
+Access rules can be overridden by adding a custom `WebSecurityConfigurerAdapter`.
+Spring Boot provides convenience methods that can be used to override access rules for actuator endpoints and static resources.
+`EndpointRequest` can be used to create a `RequestMatcher` that is based on the configprop:management.endpoints.web.base-path[] property.
+`PathRequest` can be used to create a `RequestMatcher` for resources in commonly used locations.
+
+
+
+[[boot-features-security-webflux]]
+=== WebFlux Security
+Similar to Spring MVC applications, you can secure your WebFlux applications by adding the `spring-boot-starter-security` dependency.
+The default security configuration is implemented in `ReactiveSecurityAutoConfiguration` and `UserDetailsServiceAutoConfiguration`.
+`ReactiveSecurityAutoConfiguration` imports `WebFluxSecurityConfiguration` for web security and `UserDetailsServiceAutoConfiguration` configures authentication, which is also relevant in non-web applications.
+To switch off the default web application security configuration completely, you can add a bean of type `WebFilterChainProxy` (doing so does not disable the `UserDetailsService` configuration or Actuator's security).
+
+To also switch off the `UserDetailsService` configuration, you can add a bean of type `ReactiveUserDetailsService` or `ReactiveAuthenticationManager`.
+
+Access rules and the use of multiple Spring Security components such as OAuth 2 Client and Resource Server can be configured by adding a custom `SecurityWebFilterChain` bean.
+Spring Boot provides convenience methods that can be used to override access rules for actuator endpoints and static resources.
+`EndpointRequest` can be used to create a `ServerWebExchangeMatcher` that is based on the configprop:management.endpoints.web.base-path[] property.
+
+`PathRequest` can be used to create a `ServerWebExchangeMatcher` for resources in commonly used locations.
+
+For example, you can customize your security configuration by adding something like:
+
+[source,java,indent=0]
+----
+include::{code-examples}/web/security/CustomWebFluxSecurityExample.java[tag=configuration]
+----
 
 
 
 [[boot-features-security-oauth2]]
 === OAuth2
-If you have `spring-security-oauth2` on your classpath you can take advantage of some
-auto-configuration to make it easy to set up Authorization or Resource Server. For full
-details, see the {spring-security-oauth2-reference}[Spring Security OAuth 2 Developers
-Guide].
+https://oauth.net/2/[OAuth2] is a widely used authorization framework that is supported by Spring.
 
 
 
-[[boot-features-security-oauth2-authorization-server]]
-==== Authorization Server
-To create an Authorization Server and grant access tokens you need to use
-`@EnableAuthorizationServer` and provide `security.oauth2.client.client-id` and
-`security.oauth2.client.client-secret]` properties. The client will be registered for you
-in an in-memory repository.
-
-Having done that you will be able to use the client credentials to create an access token,
-for example:
-
-[indent=0]
-----
-	$ curl client:secret@localhost:8080/oauth/token -d grant_type=password -d username=user -d password=pwd
-----
-
-The basic auth credentials for the `/token` endpoint are the `client-id` and
-`client-secret`. The user credentials are the normal Spring Security user details (which
-default in Spring Boot to "`user`" and a random password).
-
-To switch off the auto-configuration and configure the Authorization Server features
-yourself just add a `@Bean` of type `AuthorizationServerConfigurer`.
-
-
-
-[[boot-features-security-oauth2-resource-server]]
-==== Resource Server
-To use the access token you need a Resource Server (which can be the same as the
-Authorization Server). Creating a Resource Server is easy, just add
-`@EnableResourceServer` and provide some configuration to allow the server to decode
-access tokens. If your application is also an Authorization Server it already knows how
-to decode tokens, so there is nothing else to do. If your app is a standalone service then you
-need to give it some more configuration, one of the following options:
-
-* `security.oauth2.resource.user-info-uri` to use the `/me` resource (e.g.
-`\https://uaa.run.pivotal.io/userinfo` on Pivotal Web Services (PWS))
-
-* `security.oauth2.resource.token-info-uri` to use the token decoding endpoint (e.g.
-`\https://uaa.run.pivotal.io/check_token` on PWS).
-
-If you specify both the `user-info-uri` and the `token-info-uri` then you can set a flag
-to say that one is preferred over the other (`prefer-token-info=true` is the default).
-
-Alternatively (instead of `user-info-uri` or `token-info-uri`) if the tokens are JWTs you
-can configure a `security.oauth2.resource.jwt.key-value` to decode them locally (where the
-key is a verification key). The verification key value is either a symmetric secret or
-PEM-encoded RSA public key. If you don't have the key and it's public you can provide a
-URI where it can be downloaded (as a JSON object with a "`value`" field) with
-`security.oauth2.resource.jwt.key-uri`. E.g. on PWS:
-
-[indent=0]
-----
-	$ curl https://uaa.run.pivotal.io/token_key
-	{"alg":"SHA256withRSA","value":"-----BEGIN PUBLIC KEY-----\nMIIBI...\n-----END PUBLIC KEY-----\n"}
-----
-
-Additionally, if your authorization server has an endpoint that returns a set of JSON Web Keys(JWKs),
-you can configure `security.oauth2.resource.jwk.key-set-uri`. E.g. on PWS:
-
-[indent=0]
-----
-	$ curl https://uaa.run.pivotal.io/token_keys
-	{"keys":[{"kid":"key-1","alg":"RS256","value":"-----BEGIN PUBLIC KEY-----\nMIIBI...\n-----END PUBLIC KEY-----\n"]}
-----
-
-NOTE: Configuring both JWT and JWK properties will cause an error. Only one of `security.oauth2.resource.jwt.key-uri`
-(or `security.oauth2.resource.jwt.key-value`) and `security.oauth2.resource.jwk.key-set-uri` should be configured.
-
-WARNING: If you use the `security.oauth2.resource.jwt.key-uri` or `security.oauth2.resource.jwk.key-set-uri,
-` the authorization server needs to be running when your application starts up. It will log a warning if it can't
-find the key, and tell you what to do to fix it.
-
-OAuth2 resources are protected by a filter chain with order
-`security.oauth2.resource.filter-order` and the default is after the filter protecting the
-actuator endpoints by default (so actuator endpoints will stay on HTTP Basic unless you
-change the order).
-
-
-
-[[boot-features-security-oauth2-token-type]]
-=== Token Type in User Info
-Google, and certain other 3rd party identity providers, are more strict about the token
-type name that is sent in the headers to the user info endpoint. The default is "`Bearer`"
-which suits most providers and matches the spec, but if you need to change it you can set
-`security.oauth2.resource.token-type`.
-
-
-
-[[boot-features-security-custom-user-info]]
-=== Customizing the User Info RestTemplate
-If you have a `user-info-uri`, the resource server features use an `OAuth2RestTemplate`
-internally to fetch user details for authentication. This is provided as a `@Bean` of
-type `UserInfoRestTemplateFactory`. The default should be fine for most providers, but
-occasionally you might need to add additional interceptors, or change the request
-authenticator (which is how the token gets attached to outgoing requests). To add a
-customization just create a bean of type `UserInfoRestTemplateCustomizer` - it has a
-single method that will be called after the bean is created but before it is initialized.
-The rest template that is being customized here is _only_ used internally to carry out
-authentication. Alternatively, you could define your own `UserInfoRestTemplateFactory`
-`@Bean` to take full control.
-
-[TIP]
-====
-To set an RSA key value in YAML use the "`pipe`" continuation marker to split it over
-multiple lines ("`|`") and remember to indent the key value (it's a standard YAML
-language feature). Example:
-
-[source,yaml,indent=0]
-----
-	security:
-		oauth2:
-			resource:
-				jwt:
-					keyValue: |
-						-----BEGIN PUBLIC KEY-----
-						MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKC...
-						-----END PUBLIC KEY-----
-----
-====
-
-
-
-[[boot-features-security-custom-user-info-client]]
+[[boot-features-security-oauth2-client]]
 ==== Client
-To make your web-app into an OAuth2 client you can simply add `@EnableOAuth2Client` and
-Spring Boot will create a `OAuth2ClientContext` and `OAuth2ProtectedResourceDetails` that
-are necessary to create an `OAuth2RestOperations`. Spring Boot does not automatically
-create such bean but you can easily create your own:
+If you have `spring-security-oauth2-client` on your classpath, you can take advantage of some auto-configuration to make it easy to set up an OAuth2/Open ID Connect clients.
+This configuration makes use of the properties under `OAuth2ClientProperties`.
+The same properties are applicable to both servlet and reactive applications.
+
+You can register multiple OAuth2 clients and providers under the `spring.security.oauth2.client` prefix, as shown in the following example:
+
+[source,properties,indent=0,configprops]
+----
+	spring.security.oauth2.client.registration.my-client-1.client-id=abcd
+	spring.security.oauth2.client.registration.my-client-1.client-secret=password
+	spring.security.oauth2.client.registration.my-client-1.client-name=Client for user scope
+	spring.security.oauth2.client.registration.my-client-1.provider=my-oauth-provider
+	spring.security.oauth2.client.registration.my-client-1.scope=user
+	spring.security.oauth2.client.registration.my-client-1.redirect-uri=https://my-redirect-uri.com
+	spring.security.oauth2.client.registration.my-client-1.client-authentication-method=basic
+	spring.security.oauth2.client.registration.my-client-1.authorization-grant-type=authorization_code
+
+	spring.security.oauth2.client.registration.my-client-2.client-id=abcd
+	spring.security.oauth2.client.registration.my-client-2.client-secret=password
+	spring.security.oauth2.client.registration.my-client-2.client-name=Client for email scope
+	spring.security.oauth2.client.registration.my-client-2.provider=my-oauth-provider
+	spring.security.oauth2.client.registration.my-client-2.scope=email
+	spring.security.oauth2.client.registration.my-client-2.redirect-uri=https://my-redirect-uri.com
+	spring.security.oauth2.client.registration.my-client-2.client-authentication-method=basic
+	spring.security.oauth2.client.registration.my-client-2.authorization-grant-type=authorization_code
+
+	spring.security.oauth2.client.provider.my-oauth-provider.authorization-uri=https://my-auth-server/oauth/authorize
+	spring.security.oauth2.client.provider.my-oauth-provider.token-uri=https://my-auth-server/oauth/token
+	spring.security.oauth2.client.provider.my-oauth-provider.user-info-uri=https://my-auth-server/userinfo
+	spring.security.oauth2.client.provider.my-oauth-provider.user-info-authentication-method=header
+	spring.security.oauth2.client.provider.my-oauth-provider.jwk-set-uri=https://my-auth-server/token_keys
+	spring.security.oauth2.client.provider.my-oauth-provider.user-name-attribute=name
+----
+
+For OpenID Connect providers that support https://openid.net/specs/openid-connect-discovery-1_0.html[OpenID Connect discovery], the configuration can be further simplified.
+The provider needs to be configured with an `issuer-uri` which is the URI that the it asserts as its Issuer Identifier.
+For example, if the `issuer-uri` provided is "https://example.com", then an `OpenID Provider Configuration Request` will be made to "https://example.com/.well-known/openid-configuration".
+The result is expected to be an `OpenID Provider Configuration Response`.
+The following example shows how an OpenID Connect Provider can be configured with the `issuer-uri`:
+
+[source,properties,indent=0,configprops]
+----
+	spring.security.oauth2.client.provider.oidc-provider.issuer-uri=https://dev-123456.oktapreview.com/oauth2/default/
+----
+
+By default, Spring Security's `OAuth2LoginAuthenticationFilter` only processes URLs matching `/login/oauth2/code/*`.
+If you want to customize the `redirect-uri` to use a different pattern, you need to provide configuration to process that custom pattern.
+For example, for servlet applications, you can add your own `WebSecurityConfigurerAdapter` that resembles the following:
 
 [source,java,indent=0]
 ----
+public class OAuth2LoginSecurityConfig extends WebSecurityConfigurerAdapter {
 
-	@Bean
-	public OAuth2RestTemplate oauth2RestTemplate(OAuth2ClientContext oauth2ClientContext,
-			OAuth2ProtectedResourceDetails details) {
-		return new OAuth2RestTemplate(details, oauth2ClientContext);
+	@Override
+	protected void configure(HttpSecurity http) throws Exception {
+		http
+			.authorizeRequests()
+				.anyRequest().authenticated()
+				.and()
+			.oauth2Login()
+				.redirectionEndpoint()
+					.baseUri("/custom-callback");
 	}
+}
 ----
 
-NOTE: You may want to add a qualifier and review your configuration as more than one
-`RestTemplate` may be defined in your application.
 
-This configuration uses `security.oauth2.client.*` as credentials (the same as you might
-be using in the Authorization Server), but in addition it will need to know the
-authorization and token URIs in the Authorization Server. For example:
 
-.application.yml
-[source,yaml,indent=0]
+[[boot-features-security-oauth2-common-providers]]
+===== OAuth2 client registration for common providers
+For common OAuth2 and OpenID providers, including Google, Github, Facebook, and Okta, we provide a set of provider defaults (`google`, `github`, `facebook`, and `okta`, respectively).
+
+If you do not need to customize these providers, you can set the `provider` attribute to the one for which you need to infer defaults.
+Also, if the key for the client registration matches a default supported provider, Spring Boot infers that as well.
+
+In other words, the two configurations in the following example use the Google provider:
+
+[source,properties,indent=0,configprops]
 ----
-	security:
-		oauth2:
-			client:
-				clientId: bd1c0a783ccdd1c9b9e4
-				clientSecret: 1a9030fbca47a5b2c28e92f19050bb77824b5ad1
-				accessTokenUri: https://github.com/login/oauth/access_token
-				userAuthorizationUri: https://github.com/login/oauth/authorize
-				clientAuthenticationScheme: form
-----
+	spring.security.oauth2.client.registration.my-client.client-id=abcd
+	spring.security.oauth2.client.registration.my-client.client-secret=password
+	spring.security.oauth2.client.registration.my-client.provider=google
 
-An application with this configuration will redirect to Github for authorization when you
-attempt to use the `OAuth2RestTemplate`. If you are already signed into Github you won't
-even notice that it has authenticated.  These specific credentials will only work if your
-application is running on port 8080 (register your own client app in Github or other
-provider for more flexibility).
-
-To limit the scope that the client asks for when it obtains an access token you can set
-`security.oauth2.client.scope` (comma separated or an array in YAML). By default the scope
-is empty and it is up to Authorization Server to decide what the defaults should be,
-usually depending on the settings in the client registration that it holds.
-
-NOTE: There is also a setting for `security.oauth2.client.client-authentication-scheme`
-which defaults to "`header`" (but you might need to set it to "`form`" if, like Github for
-instance, your OAuth2 provider doesn't like header authentication). In fact, the
-`security.oauth2.client.*` properties are bound to an instance of
-`AuthorizationCodeResourceDetails` so all its properties can be specified.
-
-TIP: In a non-web application you can still create an `OAuth2RestOperations` and it
-is still wired into the `security.oauth2.client.*` configuration. In this case it is a
-"`client credentials token grant`" you will be asking for if you use it (and there is no
-need to use `@EnableOAuth2Client` or `@EnableOAuth2Sso`). To prevent that infrastructure
-to be defined, just remove the `security.oauth2.client.client-id` from your configuration
-(or make it the empty string).
-
-
-
-[[boot-features-security-oauth2-single-sign-on]]
-==== Single Sign On
-An OAuth2 Client can be used to fetch user details from the provider (if such features are
-available) and then convert them into an `Authentication` token for Spring Security.
-The Resource Server above support this via the `user-info-uri` property This is the basis
-for a Single Sign On (SSO) protocol based on OAuth2, and Spring Boot makes it easy to
-participate by providing an annotation `@EnableOAuth2Sso`. The Github client above can
-protect all its resources and authenticate using the Github `/user/` endpoint, by adding
-that annotation and declaring where to find the endpoint (in addition to the
-`security.oauth2.client.*` configuration already listed above):
-
-.application.yml
-[source,yaml,indent=0]]
-----
-	security:
-		oauth2:
-	...
-		resource:
-			userInfoUri: https://api.github.com/user
-			preferTokenInfo: false
+	spring.security.oauth2.client.registration.google.client-id=abcd
+	spring.security.oauth2.client.registration.google.client-secret=password
 ----
 
-Since all paths are secure by default, there is no "`home`" page that you can show to
-unauthenticated users and invite them to login (by visiting the `/login` path, or the
-path specified by `security.oauth2.sso.login-path`).
 
-To customize the access rules or paths to protect, so you can add a "`home`" page for
-instance, `@EnableOAuth2Sso` can be added to a `WebSecurityConfigurerAdapter` and the
-annotation will cause it to be decorated and enhanced with the necessary pieces to get
-the `/login` path working. For example, here we simply allow unauthenticated access
-to the home page at "/" and keep the default for everything else:
 
-[source,java,indent=0]
+[[boot-features-security-oauth2-server]]
+==== Resource Server
+If you have `spring-security-oauth2-resource-server` on your classpath, Spring Boot can set up an OAuth2 Resource Server.
+For JWT configuration, a JWK Set URI or OIDC Issuer URI needs to be specified, as shown in the following examples:
+
+[source,properties,indent=0,configprops]
 ----
-include::{code-examples}/web/security/UnauthenticatedAccessExample.java[tag=configuration]
+	spring.security.oauth2.resourceserver.jwt.jwk-set-uri=https://example.com/oauth2/default/v1/keys
+----
+
+[source,properties,indent=0,configprops]
+----
+	spring.security.oauth2.resourceserver.jwt.issuer-uri=https://dev-123456.oktapreview.com/oauth2/default/
+----
+
+NOTE: If the authorization server does not support a JWK Set URI, you can configure the resource server with the Public Key used for verifying the signature of the JWT.
+This can be done using the configprop:spring.security.oauth2.resourceserver.jwt.public-key-location[] property, where the value needs to point to a file containing the public key in the PEM-encoded x509 format.
+
+The same properties are applicable for both servlet and reactive applications.
+
+Alternatively, you can define your own `JwtDecoder` bean for servlet applications or a `ReactiveJwtDecoder` for reactive applications.
+
+In cases where opaque tokens are used instead of JWTs, you can configure the following properties to validate tokens via introspection:
+
+[source,properties,indent=0,configprops]
+----
+	spring.security.oauth2.resourceserver.opaquetoken.introspection-uri=https://example.com/check-token
+	spring.security.oauth2.resourceserver.opaquetoken.client-id=my-client-id
+	spring.security.oauth2.resourceserver.opaquetoken.client-secret=my-client-secret
+----
+
+Again, the same properties are applicable for both servlet and reactive applications.
+
+Alternatively, you can define your own `OpaqueTokenIntrospector` bean for servlet applications or a `ReactiveOpaqueTokenIntrospector` for reactive applications.
+
+
+
+==== Authorization Server
+Currently, Spring Security does not provide support for implementing an OAuth 2.0 Authorization Server.
+However, this functionality is available from the {spring-security-oauth2}[Spring Security OAuth] project, which will eventually be superseded by Spring Security completely.
+Until then, you can use the `spring-security-oauth2-autoconfigure` module to easily set up an OAuth 2.0 authorization server; see its https://docs.spring.io/spring-security-oauth2-boot[documentation] for instructions.
+
+
+[[boot-features-security-saml]]
+=== SAML 2.0
+
+
+
+[[boot-features-security-saml2-relying-party]]
+==== Relying Party
+If you have `spring-security-saml2-service-provider` on your classpath, you can take advantage of some auto-configuration to make it easy to set up a SAML 2.0 Relying Party.
+This configuration makes use of the properties under `Saml2RelyingPartyProperties`.
+
+A relying party registration represents a paired configuration between an Identity Provider, IDP, and a Service Provider, SP.
+You can register multiple relying parties under the `spring.security.saml2.relyingparty` prefix, as shown in the following example:
+
+[source,properties,indent=0,configprops]
+----
+	spring.security.saml2.relyingparty.registration.my-relying-party1.signing.credentials[0].private-key-location=path-to-private-key
+	spring.security.saml2.relyingparty.registration.my-relying-party1.signing.credentials[0].certificate-location=path-to-certificate
+	spring.security.saml2.relyingparty.registration.my-relying-party1.identityprovider.verification.credentials[0].certificate-location=path-to-verification-cert
+	spring.security.saml2.relyingparty.registration.my-relying-party1.identityprovider.entity-id=remote-idp-entity-id1
+	spring.security.saml2.relyingparty.registration.my-relying-party1.identityprovider.sso-url=https://remoteidp1.sso.url
+
+	spring.security.saml2.relyingparty.registration.my-relying-party2.signing.credentials[0].private-key-location=path-to-private-key
+    spring.security.saml2.relyingparty.registration.my-relying-party2.signing.credentials[0].certificate-location=path-to-certificate
+    spring.security.saml2.relyingparty.registration.my-relying-party2.identityprovider.verification.credentials[0].certificate-location=path-to-other-verification-cert
+    spring.security.saml2.relyingparty.registration.my-relying-party2.identityprovider.entity-id=remote-idp-entity-id2
+    spring.security.saml2.relyingparty.registration.my-relying-party2.identityprovider.sso-url=https://remoteidp2.sso.url
 ----
 
 
 
 [[boot-features-security-actuator]]
 === Actuator Security
-If the Actuator is also in use, you will find:
+For security purposes, all actuators other than `/health` and `/info` are disabled by default.
+The configprop:management.endpoints.web.exposure.include[] property can be used to enable the actuators.
 
-* The management endpoints are secure even if the application endpoints are insecure.
-* Security events are transformed into `AuditEvent` instances and published to the
-`AuditEventRepository`.
-* The default user will have the `ACTUATOR` role as well as the `USER` role.
-* Cross Site Request Forgery (CSRF) checks are disabled for actuator endpoints.
+If Spring Security is on the classpath and no other WebSecurityConfigurerAdapter is present, all actuators other than `/health` and `/info` are secured by Spring Boot auto-configuration.
+If you define a custom `WebSecurityConfigurerAdapter`, Spring Boot auto-configuration will back off and you will be in full control of actuator access rules.
 
-The Actuator security features can be modified using external properties
-(`+management.security.*+`). To override the application access rules
-add a `@Bean` of type `WebSecurityConfigurerAdapter` and use
-`@Order(SecurityProperties.ACCESS_OVERRIDE_ORDER)` if you _don't_ want to override
-the actuator access rules, or `@Order(ManagementServerProperties.ACCESS_OVERRIDE_ORDER)`
-if you _do_ want to override the actuator access rules.
+NOTE: Before setting the `management.endpoints.web.exposure.include`, ensure that the exposed actuators do not contain sensitive information and/or are secured by placing them behind a firewall or by something like Spring Security.
+
+
+
+[[boot-features-security-csrf]]
+==== Cross Site Request Forgery Protection
+Since Spring Boot relies on Spring Security's defaults, CSRF protection is turned on by default.
+This means that the actuator endpoints that require a `POST` (shutdown and loggers endpoints), `PUT` or `DELETE` will get a 403 forbidden error when the default security configuration is in use.
+
+NOTE: We recommend disabling CSRF protection completely only if you are creating a service that is used by non-browser clients.
+
+Additional information about CSRF protection can be found in the {spring-security-docs}#csrf[Spring Security Reference Guide].
 
 
 

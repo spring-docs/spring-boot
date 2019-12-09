@@ -1,19 +1,16 @@
 include::ROOT:partial$attributes.adoc[]
 [[production-ready-enabling]]
-== Enabling production-ready features
-The {github-code}/spring-boot-actuator[`spring-boot-actuator`] module provides all of
-Spring Boot's production-ready features. The simplest way to enable the features is to add
-a dependency to the `spring-boot-starter-actuator` '`Starter`'.
+== Enabling Production-ready Features
+The {spring-boot-code}/spring-boot-project/spring-boot-actuator[`spring-boot-actuator`] module provides all of Spring Boot's production-ready features.
+The simplest way to enable the features is to add a dependency to the `spring-boot-starter-actuator` '`Starter`'.
 
 .Definition of Actuator
 ****
-An actuator is a manufacturing term, referring to a mechanical device for moving or
-controlling something. Actuators can generate a large amount of motion from a small
-change.
+An actuator is a manufacturing term that refers to a mechanical device for moving or controlling something.
+Actuators can generate a large amount of motion from a small change.
 ****
 
-To add the actuator to a Maven based project, add the following '`Starter`'
-dependency:
+To add the actuator to a Maven based project, add the following '`Starter`' dependency:
 
 [source,xml,indent=0]
 ----
@@ -25,7 +22,7 @@ dependency:
 	</dependencies>
 ----
 
-For Gradle, use the declaration:
+For Gradle, use the following declaration:
 
 [source,groovy,indent=0]
 ----

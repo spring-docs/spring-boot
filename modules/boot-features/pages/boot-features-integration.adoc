@@ -1,14 +1,23 @@
 include::ROOT:partial$attributes.adoc[]
 [[boot-features-integration]]
 == Spring Integration
-Spring Boot offers several conveniences for working with Spring Integration, including
-the `spring-boot-starter-integration` '`Starter`'. Spring Integration provides
-abstractions over messaging and also other transports such as HTTP, TCP etc. If Spring
-Integration is available on your classpath it will be initialized through the
-`@EnableIntegration` annotation. Message processing statistics will be published over JMX
-if `'spring-integration-jmx'` is also on the classpath. See the
-{sc-spring-boot-autoconfigure}/integration/IntegrationAutoConfiguration.{sc-ext}[`IntegrationAutoConfiguration`]
-class for more details.
+Spring Boot offers several conveniences for working with {spring-integration}[Spring Integration], including the `spring-boot-starter-integration` "`Starter`".
+Spring Integration provides abstractions over messaging and also other transports such as HTTP, TCP, and others.
+If Spring Integration is available on your classpath, it is initialized through the `@EnableIntegration` annotation.
+
+Spring Boot also configures some features that are triggered by the presence of additional Spring Integration modules.
+If `spring-integration-jmx` is also on the classpath, message processing statistics are published over JMX.
+If `spring-integration-jdbc` is available, the default database schema can be created on startup, as shown in the following line:
+
+[source,properties,indent=0,configprops]
+----
+	spring.integration.jdbc.initialize-schema=always
+----
+
+See the {spring-boot-autoconfigure-module-code}/integration/IntegrationAutoConfiguration.java[`IntegrationAutoConfiguration`] and {spring-boot-autoconfigure-module-code}/integration/IntegrationProperties.java[`IntegrationProperties`] classes for more details.
+
+By default, if a Micrometer `meterRegistry` bean is present, Spring Integration metrics will be managed by Micrometer.
+If you wish to use legacy Spring Integration metrics, add a `DefaultMetricsFactory` bean to the application context.
 
 
 

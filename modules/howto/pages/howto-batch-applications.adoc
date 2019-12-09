@@ -1,34 +1,36 @@
 include::ROOT:partial$attributes.adoc[]
 [[howto-batch-applications]]
-== Batch applications
+== Batch Applications
+This section answers questions that arise from using Spring Batch with Spring Boot.
 
-NOTE: By default, batch applications require a `DataSource` to store job details. If you
-want to deviate from that, you'll need to implement `BatchConfigurer`, see
-{spring-batch-javadoc}/core/configuration/annotation/EnableBatchProcessing.html[The
-Javadoc of `@EnableBatchProcessing`] for more details.
+NOTE: By default, batch applications require a `DataSource` to store job details.
+Batch autowires a single `DataSource` in your context and uses that for processing.
+To have Batch use a `DataSource` other than the application’s main `DataSource`, declare a `DataSource` bean, annotating its `@Bean` method with `@BatchDataSource`.
+If you do so and want two data sources, remember to create another one and mark it as `@Primary`.
+To take greater control, implement `BatchConfigurer`.
+See {spring-batch-api}/core/configuration/annotation/EnableBatchProcessing.html[The Javadoc of `@EnableBatchProcessing`] for more details.
+
+For more about Spring Batch, see the {spring-batch}[Spring Batch project page].
 
 
 
 [[howto-execute-spring-batch-jobs-on-startup]]
-=== Execute Spring Batch jobs on startup
-Spring Batch auto-configuration is enabled by adding `@EnableBatchProcessing`
-(from Spring Batch) somewhere in your context.
+=== Execute Spring Batch Jobs on Startup
+Spring Batch auto-configuration is enabled by adding `@EnableBatchProcessing` (from Spring Batch) somewhere in your context.
 
-By default it executes *all* `Jobs` in the application context on startup (see
-{sc-spring-boot-autoconfigure}/batch/JobLauncherCommandLineRunner.{sc-ext}[JobLauncherCommandLineRunner]
-for details). You can narrow down to a specific job or jobs by specifying
-`spring.batch.job.names` (comma-separated job name patterns).
+By default, it executes *all* `Jobs` in the application context on startup (see {spring-boot-autoconfigure-module-code}/batch/JobLauncherCommandLineRunner.java[JobLauncherCommandLineRunner] for details).
+You can narrow down to a specific job or jobs by specifying `spring.batch.job.names` (which takes a comma-separated list of job name patterns).
 
-If the application context includes a `JobRegistry` then the jobs in
-`spring.batch.job.names` are looked up in the registry instead of being autowired from the
-context. This is a common pattern with more complex systems where multiple jobs are
-defined in child contexts and registered centrally.
+[TIP]
+.Specifying job parameters on the command line
+====
+Unlike command line option arguments that xref:spring-boot-reference-documentation:boot-features.adoc#boot-features-external-config-command-line-args[set properties in the `Environment`] (i.e. by starting with `--`, such as `--my-property=value`), job parameters have to be specified on the command line without dashes (e.g. `jobParam=value`).
+====
 
-See
-{sc-spring-boot-autoconfigure}/batch/BatchAutoConfiguration.{sc-ext}[BatchAutoConfiguration]
-and
-https://github.com/spring-projects/spring-batch/blob/master/spring-batch-core/src/main/java/org/springframework/batch/core/configuration/annotation/EnableBatchProcessing.java[@EnableBatchProcessing]
-for more details.
+If the application context includes a `JobRegistry`, the jobs in `spring.batch.job.names` are looked up in the registry instead of being autowired from the context.
+This is a common pattern with more complex systems, where multiple jobs are defined in child contexts and registered centrally.
+
+See {spring-boot-autoconfigure-module-code}/batch/BatchAutoConfiguration.java[BatchAutoConfiguration] and https://github.com/spring-projects/spring-batch/blob/master/spring-batch-core/src/main/java/org/springframework/batch/core/configuration/annotation/EnableBatchProcessing.java[@EnableBatchProcessing] for more details.
 
 
 

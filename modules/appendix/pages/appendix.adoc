@@ -1,7 +1,10 @@
 include::ROOT:partial$attributes.adoc[]
 [[appendix]]
-= Appendices
+== Appendices
 :numbered!:
 [appendix]
-
-
+[appendix]
+[appendix]
+[appendix]
+[appendix]
+[appendix]

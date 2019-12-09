@@ -1,7 +1,8 @@
 name: spring-boot-docs
-version: 1.5.19.RELEASE
+version: master
 title: Spring Boot Docs
 nav:
+  - modules/legal/nav.adoc
   - modules/boot-documentation/nav.adoc
   - modules/getting-started/nav.adoc
   - modules/using-boot/nav.adoc
@@ -14,14 +15,21 @@ nav:
   - modules/appendix/nav.adoc
 asciidoc:
   attributes:
-    docinfo: true
-    jooq-version: 3.9.6
-    spring-version: 4.3.22.RELEASE
-    spring-boot-version: 1.5.19.RELEASE
-    spring-boot-docs-version: 1.5.19.RELEASE
-    spring-boot-repo: https://github.com/spring-projects/spring-boot
-    spring-docs-version: 4.3.22.RELEASE
-    spring-security-docs-version: 4.2.11.RELEASE
-    spring-webservices-docs-version: 2.4.4.RELEASE
-    github-tag: v1.5.19.RELEASE
+    jetty-version: 9.4.22.v20191022
+    jooq-version: 3.12.3
+    spring-boot-version: 2.3.0.BUILD-SNAPSHOT
+    spring-amqp-version: 2.2.1.RELEASE
+    spring-data-couchbase-version: 3.2.3.BUILD-SNAPSHOT
+    spring-data-commons-version: 2.2.3.BUILD-SNAPSHOT
+    spring-data-jpa-version: 2.2.3.BUILD-SNAPSHOT
+    spring-data-jdbc-version: 1.1.3.BUILD-SNAPSHOT
+    spring-data-mongodb-version: 2.2.3.BUILD-SNAPSHOT
+    spring-data-neo4j-version: 5.2.3.BUILD-SNAPSHOT
+    spring-data-rest-version: 3.2.3.BUILD-SNAPSHOT
+    spring-data-solr-version: 4.1.3.BUILD-SNAPSHOT
+    spring-framework-version: 5.2.2.RELEASE
+    spring-integration-version: 5.2.1.RELEASE
+    spring-security-version: 5.2.1.RELEASE
+    spring-webservices-version: 3.0.8.RELEASE
+
 

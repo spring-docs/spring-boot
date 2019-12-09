@@ -1,9 +1,7 @@
 include::ROOT:partial$attributes.adoc[]
 [[boot-features-whats-next]]
-== What to read next
-If you want to learn more about any of the classes discussed in this section you can
-check out the {dc-root}[Spring Boot API documentation] or you can browse the
-{github-code}[source code directly]. If you have specific questions, take a look at the
-xref:howto:howto.adoc#howto[ how-to] section.
+== What to Read Next
+If you want to learn more about any of the classes discussed in this section, you can check out the {spring-boot-api}[Spring Boot API documentation] or you can browse the {spring-boot-code}[source code directly].
+If you have specific questions, take a look at the xref:spring-boot-reference-documentation:howto.adoc#howto[ how-to] section.
 
-If you are comfortable with Spring Boot's core features, you can carry on and read
+If you are comfortable with Spring Boot's core features, you can continue on and read about xref:spring-boot-reference-documentation:production-ready.adoc#production-ready[ production-ready features].

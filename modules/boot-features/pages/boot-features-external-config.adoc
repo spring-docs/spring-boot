@@ -1,53 +1,38 @@
 include::ROOT:partial$attributes.adoc[]
 [[boot-features-external-config]]
 == Externalized Configuration
-Spring Boot allows you to externalize your configuration so you can work with the same
-application code in different environments. You can use properties files, YAML files,
-environment variables and command-line arguments to externalize configuration. Property
-values can be injected directly into your beans using the `@Value` annotation, accessed
-via Spring's `Environment` abstraction or
-<<boot-features-external-config-typesafe-configuration-properties,bound to structured objects>>
-via `@ConfigurationProperties`.
+Spring Boot lets you externalize your configuration so that you can work with the same application code in different environments.
+You can use properties files, YAML files, environment variables, and command-line arguments to externalize configuration.
+Property values can be injected directly into your beans by using the `@Value` annotation, accessed through Spring's `Environment` abstraction, or be <<boot-features-external-config-typesafe-configuration-properties,bound to structured objects>> through `@ConfigurationProperties`.
 
-Spring Boot uses a very particular `PropertySource` order that is designed to allow
-sensible overriding of values. Properties are considered in the following order:
+Spring Boot uses a very particular `PropertySource` order that is designed to allow sensible overriding of values.
+Properties are considered in the following order:
 
-. <<using-boot-devtools-globalsettings,Devtools global settings properties>>
-  on your home directory (`~/.spring-boot-devtools.properties` when devtools is active).
-. {spring-javadoc}/test/context/TestPropertySource.{dc-ext}[`@TestPropertySource`]
-  annotations on your tests.
-. {dc-spring-boot-test}/context/SpringBootTest.{dc-ext}[`@SpringBootTest#properties`]
-  annotation attribute on your tests.
+. xref:spring-boot-reference-documentation:using-boot.adoc#using-boot-devtools-globalsettings[Devtools global settings properties] in the `$HOME/.config/spring-boot` folder when devtools is active.
+. {spring-framework-api}/test/context/TestPropertySource.html[`@TestPropertySource`] annotations on your tests.
+. `properties` attribute on your tests.
+  Available on {spring-boot-test-module-api}/context/SpringBootTest.html[`@SpringBootTest`] and the <<boot-features-testing-spring-boot-applications-testing-autoconfigured-tests,test annotations for testing a particular slice of your application>>.
 . Command line arguments.
-. Properties from `SPRING_APPLICATION_JSON` (inline JSON embedded in an environment
-  variable or system property)
+. Properties from `SPRING_APPLICATION_JSON` (inline JSON embedded in an environment variable or system property).
 . `ServletConfig` init parameters.
 . `ServletContext` init parameters.
 . JNDI attributes from `java:comp/env`.
 . Java System properties (`System.getProperties()`).
 . OS environment variables.
-. A `RandomValuePropertySource` that only has properties in `+random.*+`.
-. <<boot-features-external-config-profile-specific-properties,Profile-specific
-  application properties>> outside of your packaged jar
-  (`application-{profile}.properties` and YAML variants)
-. <<boot-features-external-config-profile-specific-properties,Profile-specific
-  application properties>> packaged inside your jar (`application-{profile}.properties`
-  and YAML variants)
-. Application properties outside of your packaged jar (`application.properties` and YAML
-  variants).
-. Application properties packaged inside your jar (`application.properties` and YAML
-  variants).
-. {spring-javadoc}/context/annotation/PropertySource.{dc-ext}[`@PropertySource`]
-  annotations on your `@Configuration` classes.
-. Default properties (specified using `SpringApplication.setDefaultProperties`).
+. A `RandomValuePropertySource` that has properties only in `+random.*+`.
+. <<boot-features-external-config-profile-specific-properties,Profile-specific application properties>> outside of your packaged jar (`application-\{profile}.properties` and YAML variants).
+. <<boot-features-external-config-profile-specific-properties,Profile-specific application properties>> packaged inside your jar (`application-\{profile}.properties` and YAML variants).
+. Application properties outside of your packaged jar (`application.properties` and YAML variants).
+. Application properties packaged inside your jar (`application.properties` and YAML variants).
+. {spring-framework-api}/context/annotation/PropertySource.html[`@PropertySource`] annotations on your `@Configuration` classes (these are added late to the `Environment` and will not have any effect on anything that reads properties from the `Environment` before the `ApplicationContext` is refreshed, such as logging configuration and auto-configuration).
+. Default properties (specified by setting `SpringApplication.setDefaultProperties`).
 
-To provide a concrete example, suppose you develop a `@Component` that uses a
-`name` property:
+To provide a concrete example, suppose you develop a `@Component` that uses a `name` property, as shown in the following example:
 
 [source,java,indent=0]
 ----
-	import org.springframework.stereotype.*
-	import org.springframework.beans.factory.annotation.*
+	import org.springframework.stereotype.*;
+	import org.springframework.beans.factory.annotation.*;
 
 	@Component
 	public class MyBean {
@@ -60,45 +45,45 @@ To provide a concrete example, suppose you develop a `@Component` that uses a
 	}
 ----
 
-On your application classpath (e.g. inside your jar) you can have an
-`application.properties` that provides a sensible default property value for `name`. When
-running in a new environment, an `application.properties` can be provided outside of your
-jar that overrides the `name`; and for one-off testing, you can launch with a specific
-command line switch (e.g. `java -jar app.jar --name="Spring"`).
+On your application classpath (for example, inside your jar) you can have an `application.properties` file that provides a sensible default property value for `name`.
+When running in a new environment, an `application.properties` file can be provided outside of your jar that overrides the `name`.
+For one-off testing, you can launch with a specific command line switch (for example, `java -jar app.jar --name="Spring"`).
 
+[[boot-features-external-config-application-json]]
 [TIP]
 ====
-The `SPRING_APPLICATION_JSON` properties can be supplied on the
-command line with an environment variable. For example in a
-UN{asterisk}X shell:
+The `SPRING_APPLICATION_JSON` properties can be supplied on the command line with an environment variable.
+For example, you could use the following line in a UN{asterisk}X shell:
 
+[indent=0]
 ----
-$ SPRING_APPLICATION_JSON='{"foo":{"bar":"spam"}}' java -jar myapp.jar
-----
-
-In this example you will end up with `foo.bar=spam` in the Spring
-`Environment`. You can also supply the JSON as
-`spring.application.json` in a System variable:
-
-----
-$ java -Dspring.application.json='{"foo":"bar"}' -jar myapp.jar
+	$ SPRING_APPLICATION_JSON='{"acme":{"name":"test"}}' java -jar myapp.jar
 ----
 
-or command line argument:
+In the preceding example, you end up with `acme.name=test` in the Spring `Environment`.
+You can also supply the JSON as `spring.application.json` in a System property, as shown in the following example:
 
+[indent=0]
 ----
-$ java -jar myapp.jar --spring.application.json='{"foo":"bar"}'
+	$ java -Dspring.application.json='{"name":"test"}' -jar myapp.jar
 ----
 
-or as a JNDI variable `java:comp/env/spring.application.json`.
+You can also supply the JSON by using a command line argument, as shown in the following example:
+
+[indent=0]
+----
+	$ java -jar myapp.jar --spring.application.json='{"name":"test"}'
+----
+
+You can also supply the JSON as a JNDI variable, as follows: `java:comp/env/spring.application.json`.
 ====
 
 
 
 [[boot-features-external-config-random-values]]
-=== Configuring random values
-The `RandomValuePropertySource` is useful for injecting random values (e.g. into secrets
-or test cases). It can produce integers, longs, uuids or strings, e.g.
+=== Configuring Random Values
+The `RandomValuePropertySource` is useful for injecting random values (for example, into secrets or test cases).
+It can produce integers, longs, uuids, or strings, as shown in the following example:
 
 [source,properties,indent=0]
 ----
@@ -110,132 +95,110 @@ or test cases). It can produce integers, longs, uuids or strings, e.g.
 	my.number.in.range=${random.int[1024,65536]}
 ----
 
-The `+random.int*+` syntax is `OPEN value (,max) CLOSE` where the `OPEN,CLOSE` are any
-character and `value,max` are integers. If `max` is provided then `value` is the minimum
-value and `max` is the maximum (exclusive).
+The `+random.int*+` syntax is `OPEN value (,max) CLOSE` where the `OPEN,CLOSE` are any character and `value,max` are integers.
+If `max` is provided, then `value` is the minimum value and `max` is the maximum value (exclusive).
 
 
 
 [[boot-features-external-config-command-line-args]]
-=== Accessing command line properties
-By default `SpringApplication` will convert any command line option arguments (starting
-with '`--`', e.g. `--server.port=9000`) to a `property` and add it to the Spring
-`Environment`. As mentioned above, command line properties always take precedence over
-other property sources.
+=== Accessing Command Line Properties
+By default, `SpringApplication` converts any command line option arguments (that is, arguments starting with `--`, such as `--server.port=9000`) to a `property` and adds them to the Spring `Environment`.
+As mentioned previously, command line properties always take precedence over other property sources.
 
-If you don't want command line properties to be added to the `Environment` you can disable
-them using `SpringApplication.setAddCommandLineProperties(false)`.
+If you do not want command line properties to be added to the `Environment`, you can disable them by using `SpringApplication.setAddCommandLineProperties(false)`.
 
 
 
 [[boot-features-external-config-application-property-files]]
-=== Application property files
-`SpringApplication` will load properties from `application.properties` files in the
-following locations and add them to the Spring `Environment`:
+=== Application Property Files
+`SpringApplication` loads properties from `application.properties` files in the following locations and adds them to the Spring `Environment`:
 
-. A `/config` subdirectory of the current directory.
+. A `/config` subdirectory of the current directory
 . The current directory
 . A classpath `/config` package
 . The classpath root
 
-The list is ordered by precedence (properties defined in locations higher in the list
-override those defined in lower locations).
+The list is ordered by precedence (properties defined in locations higher in the list override those defined in lower locations).
 
-NOTE: You can also <<boot-features-external-config-yaml, use YAML ('.yml') files>> as
-an alternative to '.properties'.
+NOTE: You can also <<boot-features-external-config-yaml, use YAML ('.yml') files>> as an alternative to '.properties'.
 
-If you don't like `application.properties` as the configuration file name you can switch
-to another by specifying a `spring.config.name` environment property. You can also refer
-to an explicit location using the `spring.config.location` environment property
-(comma-separated list of directory locations, or file paths).
+If you do not like `application.properties` as the configuration file name, you can switch to another file name by specifying a configprop:spring.config.name[] environment property.
+You can also refer to an explicit location by using the `spring.config.location` environment property (which is a comma-separated list of directory locations or file paths).
+The following example shows how to specify a different file name:
 
 [indent=0]
 ----
 	$ java -jar myproject.jar --spring.config.name=myproject
 ----
 
-or
+The following example shows how to specify two locations:
 
 [indent=0]
 ----
 	$ java -jar myproject.jar --spring.config.location=classpath:/default.properties,classpath:/override.properties
 ----
 
-WARNING: `spring.config.name` and `spring.config.location` are used very early to
-determine which files have to be loaded so they have to be defined as an environment
-property (typically OS env, system property or command line argument).
+WARNING: `spring.config.name` and `spring.config.location` are used very early to determine which files have to be loaded.
+They must be defined as an environment property (typically an OS environment variable, a system property, or a command-line argument).
 
-If `spring.config.location` contains directories (as opposed to files) they should end
-in `/` (and will be appended with the names generated from `spring.config.name` before
-being loaded, including profile-specific file names). Files specified in
-`spring.config.location` are used as-is, with no support for profile-specific variants,
-and will be overridden by any profile-specific properties.
+If `spring.config.location` contains directories (as opposed to files), they should end in `/` (and, at runtime, be appended with the names generated from `spring.config.name` before being loaded, including profile-specific file names).
+Files specified in `spring.config.location` are used as-is, with no support for profile-specific variants, and are overridden by any profile-specific properties.
 
-Config locations are searched in reverse order. By default, the configured locations are
-`classpath:/,classpath:/config/,file:./,file:./config/`. The resulting search order is:
+Config locations are searched in reverse order.
+By default, the configured locations are `classpath:/,classpath:/config/,file:./,file:./config/`.
+The resulting search order is the following:
 
-1. `file:./config/`
-2. `file:./`
-3. `classpath:/config/`
-4. `classpath:/`
+. `file:./config/`
+. `file:./`
+. `classpath:/config/`
+. `classpath:/`
 
-When custom config locations are configured, they are used in addition to the default
-locations. Custom locations are searched before the default locations. For example,
-if custom locations `classpath:/custom-config/,file:./custom-config/` are configured,
-the search order becomes:
+When custom config locations are configured by using `spring.config.location`, they replace the default locations.
+For example, if `spring.config.location` is configured with the value `classpath:/custom-config/,file:./custom-config/`, the search order becomes the following:
 
-1. `file:./custom-config/`
-2. `classpath:custom-config/`
-3. `file:./config/`
-4. `file:./`
-5. `classpath:/config/`
-6. `classpath:/`
+. `file:./custom-config/`
+. `classpath:custom-config/`
 
-This search ordering allows you to specify default values in one configuration file
-and then selectively override those values in another. You can provide default values
-for you application in `application.properties` (or whatever other basename you choose
-with `spring.config.name`) in one of the default locations. These default values can
-then be overriden at runtime with a different file located in one of the custom
-locations.
+Alternatively, when custom config locations are configured by using `spring.config.additional-location`, they are used in addition to the default locations.
+Additional locations are searched before the default locations.
+For example, if additional locations of `classpath:/custom-config/,file:./custom-config/` are configured, the search order becomes the following:
 
-NOTE: If you use environment variables rather than system properties, most operating
-systems disallow period-separated key names, but you can use underscores instead (e.g.
-`SPRING_CONFIG_NAME` instead of `spring.config.name`).
+. `file:./custom-config/`
+. `classpath:custom-config/`
+. `file:./config/`
+. `file:./`
+. `classpath:/config/`
+. `classpath:/`
 
-NOTE: If you are running in a container then JNDI properties (in `java:comp/env`) or
-servlet context initialization parameters can be used instead of, or as well as,
-environment variables or system properties.
+This search ordering lets you specify default values in one configuration file and then selectively override those values in another.
+You can provide default values for your application in `application.properties` (or whatever other basename you choose with `spring.config.name`) in one of the default locations.
+These default values can then be overridden at runtime with a different file located in one of the custom locations.
+
+NOTE: If you use environment variables rather than system properties, most operating systems disallow period-separated key names, but you can use underscores instead (for example, configprop:spring.config.name[format=envvar] instead of configprop:spring.config.name[]).
+
+NOTE: If your application runs in a container, then JNDI properties (in `java:comp/env`) or servlet context initialization parameters can be used instead of, or as well as, environment variables or system properties.
 
 
 
 [[boot-features-external-config-profile-specific-properties]]
-=== Profile-specific properties
-In addition to `application.properties` files, profile-specific properties can also be
-defined using the naming convention `application-{profile}.properties`. The
-`Environment` has a set of default profiles (by default `[default]`) which are
-used if no active profiles are set (i.e. if no profiles are explicitly activated
-then properties from `application-default.properties` are loaded).
+=== Profile-specific Properties
+In addition to `application.properties` files, profile-specific properties can also be defined by using the following naming convention: `application-\{profile}.properties`.
+The `Environment` has a set of default profiles (by default, `[default]`) that are used if no active profiles are set.
+In other words, if no profiles are explicitly activated, then properties from `application-default.properties` are loaded.
 
-Profile-specific properties are loaded from the same locations as standard
-`application.properties`, with profile-specific files always overriding the non-specific
-ones irrespective of whether the profile-specific files are inside or outside your
-packaged jar.
+Profile-specific properties are loaded from the same locations as standard `application.properties`, with profile-specific files always overriding the non-specific ones, whether or not the profile-specific files are inside or outside your packaged jar.
 
-If several profiles are specified, a last wins strategy applies. For example, profiles
-specified by the `spring.profiles.active` property are added after those configured via
-the `SpringApplication` API and therefore take precedence.
+If several profiles are specified, a last-wins strategy applies.
+For example, profiles specified by the configprop:spring.profiles.active[] property are added after those configured through the `SpringApplication` API and therefore take precedence.
 
-NOTE: If you have specified any files in `spring.config.location`, profile-specific
-variants of those files will not be considered. Use directories in
-`spring.config.location` if you also want to also use profile-specific properties.
+NOTE: If you have specified any files in configprop:spring.config.location[], profile-specific variants of those files are not considered.
+Use directories in configprop:spring.config.location[] if you want to also use profile-specific properties.
 
 
 
 [[boot-features-external-config-placeholders-in-properties]]
-=== Placeholders in properties
-The values in `application.properties` are filtered through the existing `Environment`
-when they are used so you can refer back to previously defined values (e.g. from System
-properties).
+=== Placeholders in Properties
+The values in `application.properties` are filtered through the existing `Environment` when they are used, so you can refer back to previously defined values (for example, from System properties).
 
 [source,properties,indent=0]
 ----
@@ -243,76 +206,79 @@ properties).
 	app.description=${app.name} is a Spring Boot application
 ----
 
-TIP: You can also use this technique to create '`short`' variants of existing Spring Boot
-properties. See the _xref:howto:howto-properties-and-configuration.adoc#howto-use-short-command-line-arguments[howto-use-short-command-line-arguments]_ how-to
-for details.
+TIP: You can also use this technique to create "`short`" variants of existing Spring Boot properties.
+See the _xref:spring-boot-reference-documentation:howto.adoc#howto-use-short-command-line-arguments[howto-use-short-command-line-arguments]_ how-to for details.
+
+
+
+[[boot-features-encrypting-properties]]
+=== Encrypting Properties
+Spring Boot does not provide any built in support for encrypting property values, however, it does provide the hook points necessary to modify values contained in the Spring `Environment`.
+The `EnvironmentPostProcessor` interface allows you to manipulate the `Environment` before the application starts.
+See xref:spring-boot-reference-documentation:howto.adoc#howto-customize-the-environment-or-application-context[howto-customize-the-environment-or-application-context] for details.
+
+If you're looking for a secure way to store credentials and passwords, the https://cloud.spring.io/spring-cloud-vault/[Spring Cloud Vault] project provides support for storing externalized configuration in https://www.vaultproject.io/[HashiCorp Vault].
 
 
 
 [[boot-features-external-config-yaml]]
-=== Using YAML instead of Properties
-http://yaml.org[YAML] is a superset of JSON, and as such is a very convenient format
-for specifying hierarchical configuration data. The `SpringApplication` class will
-automatically support YAML as an alternative to properties whenever you have the
-http://www.snakeyaml.org/[SnakeYAML] library on your classpath.
+=== Using YAML Instead of Properties
+https://yaml.org[YAML] is a superset of JSON and, as such, is a convenient format for specifying hierarchical configuration data.
+The `SpringApplication` class automatically supports YAML as an alternative to properties whenever you have the https://bitbucket.org/asomov/snakeyaml[SnakeYAML] library on your classpath.
 
-NOTE: If you use '`Starters`' SnakeYAML will be automatically provided via
-`spring-boot-starter`.
+NOTE: If you use "`Starters`", SnakeYAML is automatically provided by `spring-boot-starter`.
 
 
 
 [[boot-features-external-config-loading-yaml]]
 ==== Loading YAML
 Spring Framework provides two convenient classes that can be used to load YAML documents.
-The `YamlPropertiesFactoryBean` will load YAML as `Properties` and the
-`YamlMapFactoryBean` will load YAML as a `Map`.
+The `YamlPropertiesFactoryBean` loads YAML as `Properties` and the `YamlMapFactoryBean` loads YAML as a `Map`.
 
-For example, the following YAML document:
+For example, consider the following YAML document:
 
 [source,yaml,indent=0]
 ----
 	environments:
 		dev:
-			url: http://dev.bar.com
+			url: https://dev.example.com
 			name: Developer Setup
 		prod:
-			url: http://foo.bar.com
+			url: https://another.example.com
 			name: My Cool App
 ----
 
-Would be transformed into these properties:
+The preceding example would be transformed into the following properties:
 
 [source,properties,indent=0]
 ----
-	environments.dev.url=http://dev.bar.com
+	environments.dev.url=https://dev.example.com
 	environments.dev.name=Developer Setup
-	environments.prod.url=http://foo.bar.com
+	environments.prod.url=https://another.example.com
 	environments.prod.name=My Cool App
 ----
 
-YAML lists are represented as property keys with `[index]` dereferencers,
-for example this YAML:
+YAML lists are represented as property keys with `[index]` dereferencers.
+For example, consider the following YAML:
 
 [source,yaml,indent=0]
 ----
 	 my:
 		servers:
-			- dev.bar.com
-			- foo.bar.com
+			- dev.example.com
+			- another.example.com
 ----
 
-Would be transformed into these properties:
+The preceding example would be transformed into these properties:
 
 [source,properties,indent=0]
 ----
-	my.servers[0]=dev.bar.com
-	my.servers[1]=foo.bar.com
+	my.servers[0]=dev.example.com
+	my.servers[1]=another.example.com
 ----
 
-To bind to properties like that using the Spring `DataBinder` utilities (which is what
-`@ConfigurationProperties` does) you need to have a property in the target bean of type
-`java.util.List` (or `Set`) and you either need to provide a setter, or initialize it
-with a mutable value, e.g. this will bind to the properties above
+To bind to properties like that by using Spring Boot's `Binder` utilities (which is what `@ConfigurationProperties` does), you need to have a property in the target bean of type `java.util.List` (or `Set`) and you either need to provide a setter or initialize it with a mutable value.
+For example, the following example binds to the properties shown previously:
 
 [source,java,indent=0]
 ----
@@ -327,36 +293,18 @@ with a mutable value, e.g. this will bind to the properties above
 	}
 ----
 
-[NOTE]
-====
-Extra care is required when configuring lists that way as overriding will not work as you
-would expect. In the example above, when `my.servers` is redefined in several places, the
-individual elements are targeted for override, not the list. To make sure that a
-`PropertySource` with higher precedence can override the list, you need to define it as
-a single property:
-
-[source,yaml,indent=0]
-----
-	 my:
-		servers: dev.bar.com,foo.bar.com
-----
-
-====
-
 
 
 [[boot-features-external-config-exposing-yaml-to-spring]]
-==== Exposing YAML as properties in the Spring Environment
-The `YamlPropertySourceLoader` class can be used to expose YAML as a `PropertySource`
-in the Spring `Environment`. This allows you to use the familiar `@Value` annotation with
-placeholders syntax to access YAML properties.
+==== Exposing YAML as Properties in the Spring Environment
+The `YamlPropertySourceLoader` class can be used to expose YAML as a `PropertySource` in the Spring `Environment`.
+Doing so lets you use the `@Value` annotation with placeholders syntax to access YAML properties.
 
 
 
 [[boot-features-external-config-multi-profile-yaml]]
-==== Multi-profile YAML documents
-You can specify multiple profile-specific YAML documents in a single file by
-using a `spring.profiles` key to indicate when the document applies. For example:
+==== Multi-profile YAML Documents
+You can specify multiple profile-specific YAML documents in a single file by using a `spring.profiles` key to indicate when the document applies, as shown in the following example:
 
 [source,yaml,indent=0]
 ----
@@ -369,18 +317,24 @@ using a `spring.profiles` key to indicate when the document applies. For example
 		address: 127.0.0.1
 	---
 	spring:
-		profiles: production
+		profiles: production & eu-central
 	server:
 		address: 192.168.1.120
 ----
 
-In the example above, the `server.address` property will be `127.0.0.1` if the
-`development` profile is active. If the `development` and `production` profiles are *not*
-enabled, then the value for the property will be `192.168.1.100`.
+In the preceding example, if the `development` profile is active, the configprop:server.address[] property is `127.0.0.1`.
+Similarly, if the `production` *and* `eu-central` profiles are active, the configprop:server.address[] property is `192.168.1.120`.
+If the `development`, `production` and `eu-central` profiles are *not* enabled, then the value for the property is `192.168.1.100`.
 
-The default profiles are activated if none are explicitly active when the application
-context starts. So in this YAML we set a value for `security.user.password` that is
-*only* available in the "default" profile:
+[NOTE]
+====
+`spring.profiles` can therefore contain a simple profile name (for example `production`) or a profile expression.
+A profile expression allows for more complicated profile logic to be expressed, for example `production & (eu-central | eu-west)`.
+Check the {spring-framework-docs}core.html#beans-definition-profiles-java[reference guide] for more details.
+====
+
+If none are explicitly active when the application context starts, the default profiles are activated.
+So, in the following YAML, we set a value for `spring.security.user.password` that is available *only* in the "default" profile:
 
 [source,yaml,indent=0]
 ----
@@ -389,113 +343,71 @@ context starts. So in this YAML we set a value for `security.user.password` that
 	---
 	spring:
 	  profiles: default
-	security:
-	  user:
-	    password: weak
+	  security:
+	    user:
+	      password: weak
 ----
 
-whereas in this example, the password is always set because it isn't attached to any
-profile, and it would have to be explicitly reset in all other profiles as necessary:
+Whereas, in the following example, the password is always set because it is not attached to any profile, and it would have to be explicitly reset in all other profiles as necessary:
 
 [source,yaml,indent=0]
 ----
 	server:
 	  port: 8000
-	security:
-	  user:
-	    password: weak
+	spring:
+	  security:
+	    user:
+	      password: weak
 ----
 
-Spring profiles designated using the "spring.profiles" element may optionally be negated
-using the `!` character. If both negated and non-negated profiles are specified for
-a single document, at least one non-negated profile must match and no negated profiles
-may match.
+Spring profiles designated by using the `spring.profiles` element may optionally be negated by using the `!` character.
+If both negated and non-negated profiles are specified for a single document, at least one non-negated profile must match, and no negated profiles may match.
 
 
 
 [[boot-features-external-config-yaml-shortcomings]]
-==== YAML shortcomings
-YAML files can't be loaded via the `@PropertySource` annotation. So in the
-case that you need to load values that way, you need to use a properties file.
+==== YAML Shortcomings
+YAML files cannot be loaded by using the `@PropertySource` annotation.
+So, in the case that you need to load values that way, you need to use a properties file.
 
+Using the multi YAML document syntax in profile-specific YAML files can lead to unexpected behavior.
+For example, consider the following config in a file:
 
-
-[[boot-features-external-config-complex-type-merge]]
-==== Merging YAML lists
-As <<boot-features-external-config-loading-yaml,we have seen above>>, any YAML content is
-ultimately transformed to properties. That process may be counter intuitive when
-overriding "`list`" properties via a profile.
-
-For example, assume a `MyPojo` object with `name` and `description` attributes
-that are `null` by default. Let's expose a list of `MyPojo` from `FooProperties`:
-
-[source,java,indent=0]
-----
-	@ConfigurationProperties("foo")
-	public class FooProperties {
-
-		private final List<MyPojo> list = new ArrayList<>();
-
-		public List<MyPojo> getList() {
-			return this.list;
-		}
-
-	}
-----
-
-Consider the following configuration:
-
+.application-dev.yml
 [source,yaml,indent=0]
 ----
-	foo:
-	  list:
-	    - name: my name
-	      description: my description
+	server:
+	  port: 8000
 	---
 	spring:
-	  profiles: dev
-	foo:
-	  list:
-        - name: my another name
+	  profiles: "!test"
+	  security:
+	    user:
+	      password: "secret"
 ----
 
-If the `dev` profile isn't active, `FooProperties.list` will contain one `MyPojo` entry
-as defined above. If the `dev` profile is enabled however, the `list` will _still_
-only contain one entry (with name "`my another name`" and description `null`). This
-configuration _will not_ add a second `MyPojo` instance to the list, and it won't merge
-the items.
+If you run the application with the argument `--spring.profiles.active=dev` you might expect `security.user.password` to be set to "`secret`", but this is not the case.
 
-When a collection is specified in multiple profiles, the one with highest priority is
-used (and only that one):
+The nested document will be filtered because the main file is named `application-dev.yml`.
+It is already considered to be profile-specific, and nested documents will be ignored.
 
-[source,yaml,indent=0]
-----
-	foo:
-	  list:
-		- name: my name
-		  description: my description
-		- name: another name
-		  description: another description
-	---
-	spring:
-	  profiles: dev
-	foo:
-	  list:
-		 - name: my another name
-----
-
-In the example above, considering that the `dev` profile is active, `FooProperties.list`
-will contain _one_ `MyPojo` entry (with name "`my another name`" and description `null`).
+TIP: We recommend that you don't mix profile-specific YAML files and multiple YAML documents.
+Stick to using only one of them.
 
 
 
 [[boot-features-external-config-typesafe-configuration-properties]]
 === Type-safe Configuration Properties
-Using the `@Value("${property}")` annotation to inject configuration properties can
-sometimes be cumbersome, especially if you are working with multiple properties or your
-data is hierarchical in nature. Spring Boot provides an alternative method of working with
-properties that allows strongly typed beans to govern and validate the configuration of
-your application.
+Using the `@Value("$\{property}")` annotation to inject configuration properties can sometimes be cumbersome, especially if you are working with multiple properties or your data is hierarchical in nature.
+Spring Boot provides an alternative method of working with properties that lets strongly typed beans govern and validate the configuration of your application.
+
+TIP: See also the <<boot-features-external-config-vs-value,differences between `@Value` and type-safe configuration properties>>.
+
+
+
+[[boot-features-external-config-java-bean-binding]]
+==== JavaBean properties binding
+It is possible to bind a bean declaring standard JavaBean properties as shown in the following example:
 
 [source,java,indent=0]
 ----
@@ -508,8 +420,8 @@ your application.
 
 	import org.springframework.boot.context.properties.ConfigurationProperties;
 
-	@ConfigurationProperties("foo")
-	public class FooProperties {
+	@ConfigurationProperties("acme")
+	public class AcmeProperties {
 
 		private boolean enabled;
 
@@ -551,92 +463,173 @@ your application.
 	}
 ----
 
-The POJO above defines the following properties:
+The preceding POJO defines the following properties:
 
-* `foo.enabled`, `false` by default
-* `foo.remote-address`, with a type that can be coerced from `String`
-* `foo.security.username`, with a nested "security" whose name is determined by the name
-of the property. In particular the return type is not used at all there and could have
-been `SecurityProperties`
-* `foo.security.password`
-* `foo.security.roles`, with a collection of `String`
+* `acme.enabled`, with a value of `false` by default.
+* `acme.remote-address`, with a type that can be coerced from `String`.
+* `acme.security.username`, with a nested "security" object whose name is determined by the name of the property.
+  In particular, the return type is not used at all there and could have been `SecurityProperties`.
+* `acme.security.password`.
+* `acme.security.roles`, with a collection of `String` that defaults to `USER`.
+
+NOTE: Spring Boot auto-configuration heavily makes use of `@ConfigurationProperties` for easily configuring auto-configured beans.
+Similar to auto-configuration classes, `@ConfigurationProperties` classes available in Spring Boot are for internal use only.
+The properties that map to the class, which are configured via properties files, YAML files, environment variables etc., are public API but the content of the class itself is not meant to be used directly.
 
 [NOTE]
 ====
-Getters and setters are usually mandatory, since binding is via standard Java Beans
-property descriptors, just like in Spring MVC. There are cases where a setter may be
-omitted:
+Such arrangement relies on a default empty constructor and getters and setters are usually mandatory, since binding is through standard Java Beans property descriptors, just like in Spring MVC.
+A setter may be omitted in the following cases:
 
-* Maps, as long as they are initialized, need a getter but not necessarily a setter since
-they can be mutated by the binder.
-* Collections and arrays can be either accessed via an index (typically with YAML) or
-using a single comma-separated value (properties). In the latter case, a setter is
-mandatory. We recommend to always add a setter for such types. If you initialize a
-collection, make sure it is not immutable (as in the example above)
- * If nested POJO properties are initialized (like the `Security` field in the example
-above), a setter is not required. If you want the binder to create the instance on-the-fly
-using its default constructor, you will need a setter.
+* Maps, as long as they are initialized, need a getter but not necessarily a setter, since they can be mutated by the binder.
+* Collections and arrays can be accessed either through an index (typically with YAML) or by using a single comma-separated value (properties).
+  In the latter case, a setter is mandatory.
+  We recommend to always add a setter for such types.
+  If you initialize a collection, make sure it is not immutable (as in the preceding example).
+* If nested POJO properties are initialized (like the `Security` field in the preceding example), a setter is not required.
+  If you want the binder to create the instance on the fly by using its default constructor, you need a setter.
 
-Some people use Project Lombok to add getters and setters automatically. Make sure that
-Lombok doesn't generate any particular constructor for such type as it will be used
-automatically by the container to instantiate the object.
+Some people use Project Lombok to add getters and setters automatically.
+Make sure that Lombok does not generate any particular constructor for such a type, as it is used automatically by the container to instantiate the object.
+
+Finally, only standard Java Bean properties are considered and binding on static properties is not supported.
 ====
 
-TIP: See also the <<boot-features-external-config-vs-value,differences between `@Value`
-and `@ConfigurationProperties`>>.
 
-You also need to list the properties classes to register in the
-`@EnableConfigurationProperties` annotation:
+
+[[boot-features-external-config-constructor-binding]]
+==== Constructor binding
+The example in the previous section can be rewritten in an immutable fashion as shown in the following example:
 
 [source,java,indent=0]
 ----
-	@Configuration
-	@EnableConfigurationProperties(FooProperties.class)
+	package com.example;
+
+	import java.net.InetAddress;
+	import java.util.List;
+
+	import org.springframework.boot.context.properties.ConfigurationProperties;
+	import org.springframework.boot.context.properties.ConstructorBinding;
+	import org.springframework.boot.context.properties.DefaultValue;
+
+	@ConstructorBinding
+	@ConfigurationProperties("acme")
+	public class AcmeProperties {
+
+		private final boolean enabled;
+
+		private final InetAddress remoteAddress;
+
+		private final Security security;
+
+		public AcmeProperties(boolean enabled, InetAddress remoteAddress, Security security) {
+			this.enabled = enabled;
+			this.remoteAddress = remoteAddress;
+			this.security = security;
+		}
+
+		public boolean isEnabled() { ... }
+
+		public InetAddress getRemoteAddress() { ... }
+
+		public Security getSecurity() { ... }
+
+		public static class Security {
+
+			private final String username;
+
+			private final String password;
+
+			private final List<String> roles;
+
+			public Security(String username, String password,
+					@DefaultValue("USER") List<String> roles) {
+				this.username = username;
+				this.password = password;
+				this.roles = roles;
+			}
+
+			public String getUsername() { ... }
+
+			public String getPassword() { ... }
+
+			public List<String> getRoles() { ... }
+
+		}
+
+	}
+----
+
+In this setup, the `@ConstructorBinding` annotation is used to indicate that constructor binding should be used.
+This means that the binder will expect to find a constructor with the parameters that you wish to have bound.
+
+Nested members of a `@ConstructorBinding` class (such as `Security` in the example above) will also be bound via their constructor.
+
+Default values can be specified using `@DefaultValue` and the same conversion service will be applied to coerce the `String` value to the target type of a missing property.
+
+NOTE: To use constructor binding the class must be enabled using `@EnableConfigurationProperties` or configuration property scanning.
+You cannot use constructor binding with beans that are created by the regular Spring mechanisms (e.g. `@Component` beans, beans created via `@Bean` methods or beans loaded using `@Import`)
+
+TIP: If you have more than one constructor for your class you can also use `@ConstructorBinding` directly on the constructor that should be bound.
+
+
+
+[[boot-features-external-config-enabling]]
+==== Enabling `@ConfigurationProperties`-annotated types
+Spring Boot provides infrastructure to bind `@ConfigurationProperties` types and register them as beans.
+You can either enable configuration properties on a class-by-class basis or enable configuration property scanning that works in a similar manner to component scanning.
+
+Sometimes, classes annotated with `@ConfigurationProperties` might not be suitable for scanning, for example, if you're developing your own auto-configuration or you want to enable them conditionally.
+In these cases, specify the list of types to process using the `@EnableConfigurationProperties` annotation.
+This can be done on any `@Configuration` class, as shown in the following example:
+
+[source,java,indent=0]
+----
+	@Configuration(proxyBeanMethods = false)
+	@EnableConfigurationProperties(AcmeProperties.class)
 	public class MyConfiguration {
 	}
 ----
 
-[NOTE]
-====
-When `@ConfigurationProperties` bean is registered that way, the bean will have a
-conventional name: `<prefix>-<fqn>`, where `<prefix>` is the environment key prefix
-specified in the `@ConfigurationProperties` annotation and `<fqn>` the fully qualified
-name of the bean. If the annotation does not provide any prefix, only the fully qualified
-name of the bean is used.
-
-The bean name in the example above will be `foo-com.example.FooProperties`.
-====
-
-Even if the configuration above will create a regular bean for `FooProperties`, we
-recommend that `@ConfigurationProperties` only deal with the environment and in particular
-does not inject other beans from the context. Having said that, The
-`@EnableConfigurationProperties` annotation is _also_ automatically applied to your project
-so that any _existing_ bean annotated with `@ConfigurationProperties` will be configured
-from the `Environment`. You could shortcut `MyConfiguration` above by making sure
-`FooProperties` is already a bean:
+To use configuration property scanning, add the `@ConfigurationPropertiesScan` annotation to your application.
+Typically, it is added to the main application class that is annotated with `@SpringBootApplication` but it can be added to any `@Configuration` class.
+By default, scanning will occur from the package of the class that declares the annotation.
+If you want to define specific packages to scan, you can do so as shown in the following example:
 
 [source,java,indent=0]
 ----
-	@Component
-	@ConfigurationProperties(prefix="foo")
-	public class FooProperties {
-
-		// ... see above
-
+	@SpringBootApplication
+	@ConfigurationPropertiesScan({ "com.example.app", "org.acme.another" })
+	public class MyApplication {
 	}
 ----
 
-This style of configuration works particularly well with the
-`SpringApplication` external YAML configuration:
+[NOTE]
+====
+When the `@ConfigurationProperties` bean is registered using configuration property scanning or via `@EnableConfigurationProperties`, the bean has a conventional name: `<prefix>-<fqn>`, where `<prefix>` is the environment key prefix specified in the `@ConfigurationProperties` annotation and `<fqn>` is the fully qualified name of the bean.
+If the annotation does not provide any prefix, only the fully qualified name of the bean is used.
+
+The bean name in the example above is `acme-com.example.AcmeProperties`.
+====
+
+We recommend that `@ConfigurationProperties` only deal with the environment and, in particular, does not inject other beans from the context.
+For corner cases, setter injection can be used or any of the `*Aware` interfaces provided by the framework (such as `EnvironmentAware` if you need access to the `Environment`).
+If you still want to inject other beans using the constructor, the configuration properties bean must be annotated with `@Component` and use JavaBean-based property binding.
+
+
+
+[[boot-features-external-config-using]]
+==== Using `@ConfigurationProperties`-annotated types
+This style of configuration works particularly well with the `SpringApplication` external YAML configuration, as shown in the following example:
 
 [source,yaml,indent=0]
 ----
 	# application.yml
 
-	foo:
+	acme:
 		remote-address: 192.168.1.1
 		security:
-			username: foo
+			username: admin
 			roles:
 			  - USER
 			  - ADMIN
@@ -644,18 +637,17 @@ This style of configuration works particularly well with the
 	# additional configuration as required
 ----
 
-To work with `@ConfigurationProperties` beans you can just inject them in the same way
-as any other bean.
+To work with `@ConfigurationProperties` beans, you can inject them in the same way as any other bean, as shown in the following example:
 
 [source,java,indent=0]
 ----
 	@Service
 	public class MyService {
 
-		private final FooProperties properties;
+		private final AcmeProperties properties;
 
 		@Autowired
-		public MyService(FooProperties properties) {
+		public MyService(AcmeProperties properties) {
 		    this.properties = properties;
 		}
 
@@ -670,48 +662,41 @@ as any other bean.
 	}
 ----
 
-TIP: Using `@ConfigurationProperties` also allows you to generate meta-data files that can
-be used by IDEs to offer auto-completion for your own keys, see the
-<<configuration-metadata>> appendix for details.
+TIP: Using `@ConfigurationProperties` also lets you generate metadata files that can be used by IDEs to offer auto-completion for your own keys.
+See the xref:spring-boot-reference-documentation:appendix.adoc#configuration-metadata[appendix] for details.
 
 
 
 [[boot-features-external-config-3rd-party-configuration]]
-==== Third-party configuration
-As well as using `@ConfigurationProperties` to annotate a class, you can also use it
-on public `@Bean` methods. This can be particularly useful when you want to bind
-properties to third-party components that are outside of your control.
+==== Third-party Configuration
+As well as using `@ConfigurationProperties` to annotate a class, you can also use it on public `@Bean` methods.
+Doing so can be particularly useful when you want to bind properties to third-party components that are outside of your control.
 
-To configure a bean from the `Environment` properties, add `@ConfigurationProperties` to
-its bean registration:
+To configure a bean from the `Environment` properties, add `@ConfigurationProperties` to its bean registration, as shown in the following example:
 
 [source,java,indent=0]
 ----
-	@ConfigurationProperties(prefix = "bar")
+	@ConfigurationProperties(prefix = "another")
 	@Bean
-	public BarComponent barComponent() {
+	public AnotherComponent anotherComponent() {
 		...
 	}
 ----
 
-Any property defined with the `bar` prefix will be mapped onto that `BarComponent` bean
-in a similar manner as the `FooProperties` example above.
+Any JavaBean property defined with the `another` prefix is mapped onto that `AnotherComponent` bean in manner similar to the preceding `AcmeProperties` example.
 
 
 
 [[boot-features-external-config-relaxed-binding]]
-==== Relaxed binding
-Spring Boot uses some relaxed rules for binding `Environment` properties to
-`@ConfigurationProperties` beans, so there doesn't need to be an exact match between
-the `Environment` property name and the bean property name.  Common examples where this
-is useful include dashed separated (e.g. `context-path` binds to `contextPath`), and
-capitalized (e.g. `PORT` binds to `port`) environment properties.
+==== Relaxed Binding
+Spring Boot uses some relaxed rules for binding `Environment` properties to `@ConfigurationProperties` beans, so there does not need to be an exact match between the `Environment` property name and the bean property name.
+Common examples where this is useful include dash-separated environment properties (for example, `context-path` binds to `contextPath`), and capitalized environment properties (for example, `PORT` binds to `port`).
 
-For example, given the following `@ConfigurationProperties` class:
+As an example, consider the following `@ConfigurationProperties` class:
 
 [source,java,indent=0]
 ----
-	@ConfigurationProperties(prefix="person")
+	@ConfigurationProperties(prefix="acme.my-project.person")
 	public class OwnerProperties {
 
 		private String firstName;
@@ -727,57 +712,274 @@ For example, given the following `@ConfigurationProperties` class:
 	}
 ----
 
-The following properties names can all be used:
+With the preceding code, the following properties names can all be used:
 
 .relaxed binding
 [cols="1,4"]
 |===
 | Property | Note
 
-|`person.firstName`
-|Standard camel case syntax.
+| `acme.my-project.person.first-name`
+| Kebab case, which is recommended for use in `.properties` and `.yml` files.
 
-|`person.first-name`
-|Dashed notation, recommended for use in `.properties` and `.yml` files.
+| `acme.myProject.person.firstName`
+| Standard camel case syntax.
 
-|`person.first_name`
-|Underscore notation, alternative format for use in `.properties` and `.yml` files.
+| `acme.my_project.person.first_name`
+| Underscore notation, which is an alternative format for use in `.properties` and `.yml` files.
 
-|`PERSON_FIRST_NAME`
-|Upper case format. Recommended when using a system environment variables.
+| `ACME_MYPROJECT_PERSON_FIRSTNAME`
+| Upper case format, which is recommended when using system environment variables.
 |===
+
+NOTE: The `prefix` value for the annotation _must_ be in kebab case (lowercase and separated by `-`, such as `acme.my-project.person`).
+
+.relaxed binding rules per property source
+[cols="2,4,4"]
+|===
+| Property Source | Simple | List
+
+| Properties Files
+| Camel case, kebab case, or underscore notation
+| Standard list syntax using `[ ]` or comma-separated values
+
+| YAML Files
+| Camel case, kebab case, or underscore notation
+| Standard YAML list syntax or comma-separated values
+
+| Environment Variables
+| Upper case format with underscore as the delimiter.
+  `_` should not be used within a property name
+| Numeric values surrounded by underscores, such as `MY_ACME_1_OTHER = my.acme[1].other`
+
+| System properties
+| Camel case, kebab case, or underscore notation
+| Standard list syntax using `[ ]` or comma-separated values
+|===
+
+TIP: We recommend that, when possible, properties are stored in lower-case kebab format, such as `my.property-name=acme`.
+
+When binding to `Map` properties, if the `key` contains anything other than lowercase alpha-numeric characters or `-`, you need to use the bracket notation so that the original value is preserved.
+If the key is not surrounded by `[]`, any characters that are not alpha-numeric or `-` are removed.
+For example, consider binding the following properties to a `Map`:
+
+[source,yaml,indent=0]
+----
+	acme:
+	  map:
+	    "[/key1]": value1
+	    "[/key2]": value2
+	    /key3: value3
+
+----
+
+The properties above will bind to a `Map` with `/key1`, `/key2` and `key3` as the keys in the map.
+
+NOTE: For YAML files, the brackets need to be surrounded by quotes for the keys to be parsed properly.
+
+
+[[boot-features-external-config-complex-type-merge]]
+==== Merging Complex Types
+When lists are configured in more than one place, overriding works by replacing the entire list.
+
+For example, assume a `MyPojo` object with `name` and `description` attributes that are `null` by default.
+The following example exposes a list of `MyPojo` objects from `AcmeProperties`:
+
+[source,java,indent=0]
+----
+	@ConfigurationProperties("acme")
+	public class AcmeProperties {
+
+		private final List<MyPojo> list = new ArrayList<>();
+
+		public List<MyPojo> getList() {
+			return this.list;
+		}
+
+	}
+----
+
+Consider the following configuration:
+
+[source,yaml,indent=0]
+----
+	acme:
+	  list:
+	    - name: my name
+	      description: my description
+	---
+	spring:
+	  profiles: dev
+	acme:
+	  list:
+	    - name: my another name
+----
+
+If the `dev` profile is not active, `AcmeProperties.list` contains one `MyPojo` entry, as previously defined.
+If the `dev` profile is enabled, however, the `list` _still_ contains only one entry (with a name of `my another name` and a description of `null`).
+This configuration _does not_ add a second `MyPojo` instance to the list, and it does not merge the items.
+
+When a `List` is specified in multiple profiles, the one with the highest priority (and only that one) is used.
+Consider the following example:
+
+[source,yaml,indent=0]
+----
+	acme:
+	  list:
+	    - name: my name
+	      description: my description
+	    - name: another name
+	      description: another description
+	---
+	spring:
+	  profiles: dev
+	acme:
+	  list:
+	    - name: my another name
+----
+
+In the preceding example, if the `dev` profile is active, `AcmeProperties.list` contains _one_ `MyPojo` entry (with a name of `my another name` and a description of `null`).
+For YAML, both comma-separated lists and YAML lists can be used for completely overriding the contents of the list.
+
+For `Map` properties, you can bind with property values drawn from multiple sources.
+However, for the same property in multiple sources, the one with the highest priority is used.
+The following example exposes a `Map<String, MyPojo>` from `AcmeProperties`:
+
+[source,java,indent=0]
+----
+	@ConfigurationProperties("acme")
+	public class AcmeProperties {
+
+		private final Map<String, MyPojo> map = new HashMap<>();
+
+		public Map<String, MyPojo> getMap() {
+			return this.map;
+		}
+
+	}
+----
+
+Consider the following configuration:
+
+[source,yaml,indent=0]
+----
+	acme:
+	  map:
+	    key1:
+	      name: my name 1
+	      description: my description 1
+	---
+	spring:
+	  profiles: dev
+	acme:
+	  map:
+	    key1:
+	      name: dev name 1
+	    key2:
+	      name: dev name 2
+	      description: dev description 2
+----
+
+If the `dev` profile is not active, `AcmeProperties.map` contains one entry with key `key1` (with a name of `my name 1` and a description of `my description 1`).
+If the `dev` profile is enabled, however, `map` contains two entries with keys `key1` (with a name of `dev name 1` and a description of `my description 1`) and `key2` (with a name of `dev name 2` and a description of `dev description 2`).
+
+NOTE: The preceding merging rules apply to properties from all property sources and not just YAML files.
 
 
 
 [[boot-features-external-config-conversion]]
-==== Properties conversion
-Spring will attempt to coerce the external application properties to the right type when
-it binds to the `@ConfigurationProperties` beans. If you need custom type conversion you
-can provide a `ConversionService` bean (with bean id `conversionService`) or custom
-property editors (via a `CustomEditorConfigurer` bean) or custom `Converters` (with
-bean definitions annotated as `@ConfigurationPropertiesBinding`).
+==== Properties Conversion
+Spring Boot attempts to coerce the external application properties to the right type when it binds to the `@ConfigurationProperties` beans.
+If you need custom type conversion, you can provide a `ConversionService` bean (with a bean named `conversionService`) or custom property editors (through a `CustomEditorConfigurer` bean) or custom `Converters` (with bean definitions annotated as `@ConfigurationPropertiesBinding`).
 
-NOTE: As this bean is requested very early during the application lifecycle, make sure to
-limit the dependencies that your `ConversionService` is using. Typically, any dependency
-that you require may not be fully initialized at creation time. You may want to rename
-your custom `ConversionService` if it's not required for configuration keys coercion and
-only rely on custom converters qualified with `@ConfigurationPropertiesBinding`.
+NOTE: As this bean is requested very early during the application lifecycle, make sure to limit the dependencies that your `ConversionService` is using.
+Typically, any dependency that you require may not be fully initialized at creation time.
+You may want to rename your custom `ConversionService` if it is not required for configuration keys coercion and only rely on custom converters qualified with `@ConfigurationPropertiesBinding`.
+
+
+
+[[boot-features-external-config-conversion-duration]]
+===== Converting durations
+Spring Boot has dedicated support for expressing durations.
+If you expose a `java.time.Duration` property, the following formats in application properties are available:
+
+* A regular `long` representation (using milliseconds as the default unit unless a `@DurationUnit` has been specified)
+* The standard ISO-8601 format {java-api}/java/time/Duration.html#parse-java.lang.CharSequence-[used by `java.time.Duration`]
+* A more readable format where the value and the unit are coupled (e.g. `10s` means 10 seconds)
+
+Consider the following example:
+
+[source,java,indent=0]
+----
+include::{code-examples}/context/properties/bind/AppSystemProperties.java[tag=example]
+----
+
+To specify a session timeout of 30 seconds, `30`, `PT30S` and `30s` are all equivalent.
+A read timeout of 500ms can be specified in any of the following form: `500`, `PT0.5S` and `500ms`.
+
+You can also use any of the supported units.
+These are:
+
+* `ns` for nanoseconds
+* `us` for microseconds
+* `ms` for milliseconds
+* `s` for seconds
+* `m` for minutes
+* `h` for hours
+* `d` for days
+
+The default unit is milliseconds and can be overridden using `@DurationUnit` as illustrated in the sample above.
+
+TIP: If you are upgrading from a previous version that is simply using `Long` to express the duration, make sure to define the unit (using `@DurationUnit`) if it isn't milliseconds alongside the switch to `Duration`.
+Doing so gives a transparent upgrade path while supporting a much richer format.
+
+
+
+[[boot-features-external-config-conversion-datasize]]
+===== Converting Data Sizes
+Spring Framework has a `DataSize` value type that expresses a size in bytes.
+If you expose a `DataSize` property, the following formats in application properties are available:
+
+* A regular `long` representation (using bytes as the default unit unless a `@DataSizeUnit` has been specified)
+* A more readable format where the value and the unit are coupled (e.g. `10MB` means 10 megabytes)
+
+Consider the following example:
+
+[source,java,indent=0]
+----
+include::{code-examples}/context/properties/bind/AppIoProperties.java[tag=example]
+----
+
+To specify a buffer size of 10 megabytes, `10` and `10MB` are equivalent.
+A size threshold of 256 bytes can be specified as `256` or `256B`.
+
+You can also use any of the supported units.
+These are:
+
+* `B` for bytes
+* `KB` for kilobytes
+* `MB` for megabytes
+* `GB` for gigabytes
+* `TB` for terabytes
+
+The default unit is bytes and can be overridden using `@DataSizeUnit` as illustrated in the sample above.
+
+TIP: If you are upgrading from a previous version that is simply using `Long` to express the size, make sure to define the unit (using `@DataSizeUnit`) if it isn't bytes alongsidethe switch to `DataSize`.
+Doing so gives a transparent upgrade path while supporting a much richer format.
 
 
 
 [[boot-features-external-config-validation]]
 ==== @ConfigurationProperties Validation
-Spring Boot will attempt to validate `@ConfigurationProperties` classes whenever they
-are annotated with Spring's `@Validated` annotation. You can use JSR-303 `javax.validation`
-constraint annotations directly on your configuration class. Simply ensure that a
-compliant JSR-303 implementation is on your classpath, then add constraint annotations to
-your fields:
+Spring Boot attempts to validate `@ConfigurationProperties` classes whenever they are annotated with Spring's `@Validated` annotation.
+You can use JSR-303 `javax.validation` constraint annotations directly on your configuration class.
+To do so, ensure that a compliant JSR-303 implementation is on your classpath and then add constraint annotations to your fields, as shown in the following example:
 
 [source,java,indent=0]
 ----
-	@ConfigurationProperties(prefix="foo")
+	@ConfigurationProperties(prefix="acme")
 	@Validated
-	public class FooProperties {
+	public class AcmeProperties {
 
 		@NotNull
 		private InetAddress remoteAddress;
@@ -787,15 +989,16 @@ your fields:
 	}
 ----
 
-In order to validate values of nested properties, you must annotate the associated field
-as `@Valid` to trigger its validation. For example, building upon the above
-`FooProperties` example:
+TIP: You can also trigger validation by annotating the `@Bean` method that creates the configuration properties with `@Validated`.
+
+To ensure that validation is always triggered for nested properties, even when no properties are found, the associated field must be annotated with `@Valid`.
+The following example builds on the preceding `AcmeProperties` example:
 
 [source,java,indent=0]
 ----
-	@ConfigurationProperties(prefix="connection")
+	@ConfigurationProperties(prefix="acme")
 	@Validated
-	public class FooProperties {
+	public class AcmeProperties {
 
 		@NotNull
 		private InetAddress remoteAddress;
@@ -817,38 +1020,31 @@ as `@Valid` to trigger its validation. For example, building upon the above
 	}
 ----
 
-You can also add a custom Spring `Validator` by creating a bean definition called
-`configurationPropertiesValidator`. The `@Bean` method should be declared `static`. The
-configuration properties validator is created very early in the application's lifecycle
-and declaring the `@Bean` method as static allows the bean to be created without having to
-instantiate the `@Configuration` class. This avoids any problems that may be caused by
-early instantiation. There is a
-{github-code}/spring-boot-samples/spring-boot-sample-property-validation[property
-validation sample] so you can see how to set things up.
+You can also add a custom Spring `Validator` by creating a bean definition called `configurationPropertiesValidator`.
+The `@Bean` method should be declared `static`.
+The configuration properties validator is created very early in the application's lifecycle, and declaring the `@Bean` method as static lets the bean be created without having to instantiate the `@Configuration` class.
+Doing so avoids any problems that may be caused by early instantiation.
 
-TIP: The `spring-boot-actuator` module includes an endpoint that exposes all
-`@ConfigurationProperties` beans. Simply point your web browser to `/configprops`
-or use the equivalent JMX endpoint. See the
-_xref:production-ready:production-ready-endpoints.adoc#production-ready-endpoints[ Production ready features]_.
-section for details.
+TIP: The `spring-boot-actuator` module includes an endpoint that exposes all `@ConfigurationProperties` beans.
+Point your web browser to `/actuator/configprops` or use the equivalent JMX endpoint.
+See the "xref:spring-boot-reference-documentation:production-ready.adoc#production-ready-endpoints[ Production ready features]" section for details.
 
 
 
 [[boot-features-external-config-vs-value]]
 ==== @ConfigurationProperties vs. @Value
-`@Value` is a core container feature and it does not provide the same features as
-type-safe Configuration Properties. The table below summarizes the features that are
-supported by `@ConfigurationProperties` and `@Value`:
+The `@Value` annotation is a core container feature, and it does not provide the same features as type-safe configuration properties.
+The following table summarizes the features that are supported by `@ConfigurationProperties` and `@Value`:
 
 [cols="4,2,2"]
 |===
-|Feature |`@ConfigurationProperties` |`@Value`
+| Feature |`@ConfigurationProperties` |`@Value`
 
 | <<boot-features-external-config-relaxed-binding,Relaxed binding>>
 | Yes
 | No
 
-| xref:appendix:configuration-metadata.adoc#configuration-metadata[Meta-data support]
+| xref:spring-boot-reference-documentation:appendix.adoc#configuration-metadata[Meta-data support]
 | Yes
 | No
 
@@ -857,14 +1053,10 @@ supported by `@ConfigurationProperties` and `@Value`:
 | Yes
 |===
 
-If you define a set of configuration keys for your own components, we recommend you to
-group them in a POJO annotated with `@ConfigurationProperties`. Please also be aware
-that since `@Value` does not support relaxed binding, it isn't a great candidate if you
-need to provide the value using environment variables.
+If you define a set of configuration keys for your own components, we recommend you group them in a POJO annotated with `@ConfigurationProperties`.
+You should also be aware that, since `@Value` does not support relaxed binding, it is not a good candidate if you need to provide the value by using environment variables.
 
-Finally, while you can write a `SpEL` expression in `@Value`, such expressions are not
-processed from <<boot-features-external-config-application-property-files,Application
-property files>>.
+Finally, while you can write a `SpEL` expression in `@Value`, such expressions are not processed from <<boot-features-external-config-application-property-files,application property files>>.
 
 
 

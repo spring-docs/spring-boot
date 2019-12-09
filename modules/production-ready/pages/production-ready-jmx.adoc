@@ -1,49 +1,47 @@
 include::ROOT:partial$attributes.adoc[]
 [[production-ready-jmx]]
-== Monitoring and management over JMX
-Java Management Extensions (JMX) provide a standard mechanism to monitor and manage
-applications. By default Spring Boot will expose management endpoints as JMX MBeans
-under the `org.springframework.boot` domain.
+== Monitoring and Management over JMX
+Java Management Extensions (JMX) provide a standard mechanism to monitor and manage applications.
+By default, this feature is not enabled and can be turned on by setting the configuration property configprop:spring.jmx.enabled[] to `true`.
+Spring Boot exposes management endpoints as JMX MBeans under the `org.springframework.boot` domain by default.
 
 
 
 [[production-ready-custom-mbean-names]]
-=== Customizing MBean names
-The name of the MBean is usually generated from the `id` of the endpoint. For example
-the `health` endpoint is exposed as `org.springframework.boot/Endpoint/healthEndpoint`.
+=== Customizing MBean Names
+The name of the MBean is usually generated from the `id` of the endpoint.
+For example, the `health` endpoint is exposed as `org.springframework.boot:type=Endpoint,name=Health`.
 
-If your application contains more than one Spring `ApplicationContext` you may find that
-names clash. To solve this problem you can set the `endpoints.jmx.unique-names` property
-to `true` so that MBean names are always unique.
+If your application contains more than one Spring `ApplicationContext`, you may find that names clash.
+To solve this problem, you can set the configprop:spring.jmx.unique-names[] property to `true` so that MBean names are always unique.
 
-You can also customize the JMX domain under which endpoints are exposed. Here is an
-example `application.properties`:
+You can also customize the JMX domain under which endpoints are exposed.
+The following settings show an example of doing so in `application.properties`:
 
-[source,properties,indent=0]
+[source,properties,indent=0,configprops]
 ----
-	endpoints.jmx.domain=myapp
-	endpoints.jmx.unique-names=true
+	spring.jmx.unique-names=true
+	management.endpoints.jmx.domain=com.example.myapp
 ----
 
 
 
 [[production-ready-disable-jmx-endpoints]]
-=== Disabling JMX endpoints
-If you don't want to expose endpoints over JMX you can set the `endpoints.jmx.enabled`
-property to `false`:
+=== Disabling JMX Endpoints
+If you do not want to expose endpoints over JMX, you can set the configprop:management.endpoints.jmx.exposure.exclude[] property to `*`, as shown in the following example:
 
-[source,properties,indent=0]
+[source,properties,indent=0,configprops]
 ----
-	endpoints.jmx.enabled=false
+	management.endpoints.jmx.exposure.exclude=*
 ----
 
 
 
 [[production-ready-jolokia]]
 === Using Jolokia for JMX over HTTP
-Jolokia is a JMX-HTTP bridge giving an alternative method of accessing JMX beans. To
-use Jolokia, simply include a dependency to `org.jolokia:jolokia-core`. For example,
-using Maven you would add the following:
+Jolokia is a JMX-HTTP bridge that provides an alternative method of accessing JMX beans.
+To use Jolokia, include a dependency to `org.jolokia:jolokia-core`.
+For example, with Maven, you would add the following dependency:
 
 [source,xml,indent=0]
 ----
@@ -53,31 +51,31 @@ using Maven you would add the following:
 	</dependency>
 ----
 
-Jolokia can then be accessed using `/jolokia` on your management HTTP server.
+The Jolokia endpoint can then be exposed by adding `jolokia` or `*` to the configprop:management.endpoints.web.exposure.include[] property.
+You can then access it by using `/actuator/jolokia` on your management HTTP server.
 
 
 
 [[production-ready-customizing-jolokia]]
 ==== Customizing Jolokia
-Jolokia has a number of settings that you would traditionally configure using servlet
-parameters. With Spring Boot you can use your `application.properties`, simply prefix the
-parameter with `jolokia.config.`:
+Jolokia has a number of settings that you would traditionally configure by setting servlet parameters.
+With Spring Boot, you can use your `application.properties` file.
+To do so, prefix the parameter with `management.endpoint.jolokia.config.`, as shown in the following example:
 
-[source,properties,indent=0]
+[source,properties,indent=0,configprops]
 ----
-	jolokia.config.debug=true
+	management.endpoint.jolokia.config.debug=true
 ----
 
 
 
 [[production-ready-disabling-jolokia]]
 ==== Disabling Jolokia
-If you are using Jolokia but you don't want Spring Boot to configure it, simply set the
-`endpoints.jolokia.enabled` property to `false`:
+If you use Jolokia but do not want Spring Boot to configure it, set the configprop:management.endpoint.jolokia.enabled[] property to `false`, as follows:
 
-[source,properties,indent=0]
+[source,properties,indent=0,configprops]
 ----
-	endpoints.jolokia.enabled=false
+	management.endpoint.jolokia.enabled=false
 ----
 
 
